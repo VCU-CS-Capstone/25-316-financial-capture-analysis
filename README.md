@@ -1,11 +1,8 @@
-# *Your Project Description*
+# Financial Receipt Capture and Analysis System
 
-## *Sponsoring Company or Organization*
+## Capital One
 ## *Short Project Description*
-The directory structure in this GitHub is to allow the project to have all its resources self-contained.
-Open Source software should not just be a repository of code.  There are a number of directories to help you and others who will 
-follow in your footsteps.  It'll also allow the Linux Foundation OMP Mentorship program to keep track of your project and get
-a better understanding of the problems you encountered during the development of this project. 
+Financial Receipt Capture and Analysis System streamlines the process of capturing and managing hard copy credit card transaction receipts. This innovative tool allows users to: Digitally Store Receipts: Easily capture and store physical receipts for future reference. Search and Retrieve: Quickly find specific receipts with powerful search functionality. Cost Comparison: Analyze spending across different periods and categories to identify cost-saving opportunities. Trend Analysis: Understand spending trends to make informed financial decisions. Spending Analysis and Categorization: Gain insights into your spending habits with detailed categorization and analysis, helping you manage your finances better.. 
 
 | Folder | Description |
 |---|---|
