@@ -1,4 +1,4 @@
-# *CS 25-XXX Project Name*
+# *CS 25-316 Financial Capture Analysis*
 
 **Students' Names:**
 Will Southerland - Computer Science 
