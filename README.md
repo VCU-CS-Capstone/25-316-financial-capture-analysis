@@ -1,7 +1,7 @@
 # Financial Receipt Capture and Analysis System
 
 ## Capital One
-## *Short Project Description*
+## *Project Description*
 Financial Receipt Capture and Analysis System streamlines the process of capturing and managing hard copy credit card transaction receipts. This innovative tool allows users to: Digitally Store Receipts: Easily capture and store physical receipts for future reference. Search and Retrieve: Quickly find specific receipts with powerful search functionality. Cost Comparison: Analyze spending across different periods and categories to identify cost-saving opportunities. Trend Analysis: Understand spending trends to make informed financial decisions. Spending Analysis and Categorization: Gain insights into your spending habits with detailed categorization and analysis, helping you manage your finances better.. 
 
 | Folder | Description |
