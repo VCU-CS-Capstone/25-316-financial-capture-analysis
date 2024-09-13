@@ -7,10 +7,10 @@
 * Lindsey Marandina - Computer Science 
 
 **Mentor:**
-Mehul Garnara - Capital One
+* Mehul Garnara - Capital One
 
 **Faculty Advisor:**
-Thang Dinh - Computer Science
+* Thang Dinh - Computer Science
 
 ## 1) Accomplishments this week ##
    - Project was assigned
