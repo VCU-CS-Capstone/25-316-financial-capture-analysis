@@ -1,10 +1,10 @@
 # *CS 25-316 Financial Capture Analysis*
 
 **Students' Names:**
-Will Southerland - Computer Science 
-Josh Tarongoy - Computer Science 
-Joshua Whitchurch - Computer Science 
-Lindsey Marandina - Computer Science 
+* Will Southerland - Computer Science 
+* Josh Tarongoy - Computer Science 
+* Joshua Whitchurch - Computer Science 
+* Lindsey Marandina - Computer Science 
 
 **Mentor:**
 Mehul Garnara - Capital One
