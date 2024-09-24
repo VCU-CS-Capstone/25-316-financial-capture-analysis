@@ -6,5 +6,4 @@
 
 ## Textract Demo
 Explains the textractdemo.js code, how textract functions, and how it may function in the project
-
-{{< video https://youtu.be/ZCNZnfjwiNM >}}
+https://youtu.be/ZCNZnfjwiNM
