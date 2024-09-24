@@ -6,7 +6,7 @@ const fs = require('fs');
 const client = new TextractClient({});
 
 // Reading the image file
-const imageBytes = fs.readFileSync('C:/Users/VCU/Desktop/SCHOOL/fall 24/capstone/textract demo/20240923_150101.jpg')
+const imageBytes = fs.readFileSync('<your file path here>') //update this with the filepath of an image on your device
 
 //prepare the parameters for Textracts API
 const params = {
