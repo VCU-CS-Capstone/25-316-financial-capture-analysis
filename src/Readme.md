@@ -36,7 +36,7 @@ Please document here
 
 2. Install the required dependencies
    ```bash
-  pip install -r requirements.txt
+   pip install -r requirements.txt
    ```
 You may also need to  install Tesseract OCR on your system.  Instructions for installation can be found here: [Tesseract Github](https://github.com/tesseract-ocr/tesseract)
 
