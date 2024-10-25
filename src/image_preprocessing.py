@@ -1,19 +1,26 @@
 import cv2
 import numpy as np
 from scipy.ndimage import interpolation as inter
+import os
+
+# Ensure the output directory exists
+output_dir = os.path.expanduser("~/saved_images")
+os.makedirs(output_dir, exist_ok=True)
 
 # Rescales the image by a factor of 1.2.
-def rescale_image(img):
+def rescale_image(img, output_dir):
     img = cv2.resize(img, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC)
+    cv2.imwrite(os.path.join(output_dir, "1_rescaled.jpg"), img)
     return img
 
 # Converts the image to grayscale.
-def grayscale_image(img):
+def grayscale_image(img, output_dir):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    cv2.imwrite(os.path.join(output_dir, "2_grayscale.jpg"), img)
     return img
 
 # Applies noise removal with a combination of blurs and thresholds.
-def remove_noise(img):
+def remove_noise(img, output_dir):
     # Dilation
     kernel = np.ones((1, 1), np.uint8)
     img_dilated = cv2.dilate(img, kernel, iterations=1)
@@ -33,11 +40,12 @@ def remove_noise(img):
     # Adaptive Threshold
     img_adaptive_thresh = cv2.adaptiveThreshold(img_bilateral, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                                 cv2.THRESH_BINARY, 31, 2)
+    cv2.imwrite(os.path.join(output_dir, "3_noise_removed.jpg"), img_adaptive_thresh)
 
     return img_adaptive_thresh
 
 # Removes shadows from the image by normalizing the background.
-def remove_shadows(img):
+def remove_shadows(img, output_dir):
     rgb_planes = cv2.split(img)
     result_planes = []
     for plane in rgb_planes:
@@ -46,10 +54,12 @@ def remove_shadows(img):
         diff_img = 255 - cv2.absdiff(plane, bg_img)
         result_planes.append(cv2.normalize(diff_img, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_8UC1))
     result = cv2.merge(result_planes)
+    
+    cv2.imwrite(os.path.join(output_dir, "4_shadows_removed.jpg"), result)
     return result
 
 # Deskews the image by finding the best angle of rotation.
-def deskew_image(image, delta=1, limit=5):
+def deskew_image(image, output_dir, delta=0.5, limit=15):
     def determine_score(arr, angle):
         data = inter.rotate(arr, angle, reshape=False, order=0)
         histogram = np.sum(data, axis=1)
@@ -57,7 +67,7 @@ def deskew_image(image, delta=1, limit=5):
         return histogram, score
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
     scores = []
     angles = np.arange(-limit, limit + delta, delta)
@@ -66,11 +76,19 @@ def deskew_image(image, delta=1, limit=5):
         scores.append(score)
 
     best_angle = angles[scores.index(max(scores))]
-    (h, w) = image.shape[:2]
-    M = cv2.getRotationMatrix2D((w // 2, h // 2), best_angle, 1.0)
-    rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+    print(f"Detected skew angle: {best_angle}")  # Debugging line
 
+    # Only rotate if angle is significantly different from 0
+    if abs(best_angle) > 0.1:
+        (h, w) = image.shape[:2]
+        M = cv2.getRotationMatrix2D((w // 2, h // 2), best_angle, 1.0)
+        rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+    else:
+        rotated = image  # No rotation if angle is close to 0
+
+    cv2.imwrite(os.path.join(output_dir, "5_deskewed.jpg"), rotated)
     return rotated
+
 
 # Rotates the image using OpenCV and saves the result.
 def rotate_image(input_file, output_file, angle=90):
