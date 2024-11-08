@@ -1,12 +1,25 @@
 from PIL import Image
-from pytesseract import pytesseract
+import pytesseract
+import extract_entities  # Import the entity extraction module
 
-# Runs Tesseract OCR on the image and saves the result as a text file.
-def run_tesseract(input_file, output_file, language="eng"):
+# Function to run Tesseract OCR on an image and process extracted text
+def run_tesseract(input_file, language="eng"):
     try:
+        # Print the input file for confirmation
+        print(f"Processing file: {input_file}")
+
+        # Open the image file and extract text with Tesseract
         with Image.open(input_file) as img:
-            image_data = pytesseract.image_to_string(img, lang=language, timeout=60, config="--psm 6")
-            with open(output_file, "w", encoding='utf-8') as out:
-                out.write(image_data)
+            # Run OCR with specified language and settings
+            extracted_text = pytesseract.image_to_string(img, lang=language, config="--psm 6")
+            print("OCR Result:", extracted_text)  # Output OCR result for reference
+
+            # Pass the extracted text to the entity extraction module for further processing
+            extract_entities.process_text(extracted_text)
+    except pytesseract.TesseractError as e:
+        print(f"Tesseract Error: {e}")
     except Exception as e:
         print(f"Error running Tesseract OCR: {e}")
+
+# Example usage:
+# run_tesseract("example_image.png")
