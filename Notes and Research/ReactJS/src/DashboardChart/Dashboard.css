@@ -44,22 +44,45 @@
 .BodyContainer{
   position: absolute;
   left: 320px;
-  background-color: gainsboro;
+  background-color: rgb(255, 254, 254);
   padding: 15px 15px;
   margin: auto;
-  width: 500px;
+  width: 770px;
   height: auto;
-  min-height: 300px;
+  min-height: 380px;
 }
 
 .BodyContainer-first {
-  top: 160px;
+  top: 180px;
 }
 
 .BodyContainer-second {
-  top: 560px;
+  top: 609px;
 }
 
+
+.BodyContainer-third {
+  display: flex; /* Enable Flexbox */
+  justify-content: center; /* Center horizontally */
+  align-items: center;
+  position: absolute;
+  width: 770px;
+  height: 420px;
+  background-color: white;
+  top: 180px;
+  left: 1120px;
+}
+
+.donutChart {
+  max-width: 95%;
+  max-height: 95%;
+}
+
+
+.BodyContainer-fourth {
+  top: 610px;
+  left: 1120px;
+}
 
 .BodyContainer-wide {
   top: 160px;
