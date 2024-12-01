@@ -67,17 +67,17 @@
   align-items: center;
   position: absolute;
   width: 770px;
-  height: 420px;
+  height: 380px;
   background-color: white;
   top: 180px;
   left: 1120px;
 }
 
-.donutChart {
-  max-width: 95%;
-  max-height: 95%;
+.BodyContainer-third .donutChart {
+  /* max-width: 50%; */
+  max-height: 300px;
+  height: max-content;           /* Maintain aspect ratio */
 }
-
 
 .BodyContainer-fourth {
   top: 610px;
@@ -85,8 +85,8 @@
 }
 
 .BodyContainer-wide {
-  top: 160px;
-  width: 1100px;
+  top: 180px;
+  width: 1500px;
 }
 
 
