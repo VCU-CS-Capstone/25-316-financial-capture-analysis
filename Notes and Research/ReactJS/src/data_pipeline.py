@@ -1,65 +1,73 @@
+import boto3
 import os
-import cv2
-from preprocessing import rescale_image, rotate_image, deskew_image, remove_noise, remove_shadows, grayscale_image
-from tesseract_engine import run_tesseract
-# from textract_engine import run_textract  # Textract commented out for now
+import json
 
-# Enhances the image by applying rescaling, rotation, deskewing, noise removal, and shadow removal.
-def enhance_image(img, tmp_path, output_dir, rotate=True):
-    img = rescale_image(img, output_dir=output_dir)
+# AWS Textract client setup
+textract = boto3.client('textract')
 
-    if rotate:
-        tmp_path = os.path.join(output_dir, "rotated.jpg")
-        cv2.imwrite(tmp_path, img)
-        rotate_image(tmp_path, tmp_path)
-        img = cv2.imread(tmp_path)
-
-    img = remove_shadows(img, output_dir=output_dir)        
-    img = deskew_image(img, output_dir=output_dir) 
-    img = grayscale_image(img, output_dir=output_dir)
-    img = remove_noise(img, output_dir=output_dir)
-
-    return img
-
-# Processes a single receipt image.
-# Updated process_receipt function
-def process_receipt(filename, output_dir, rotate=True):
+# Function to process receipt using AnalyzeExpense API
+def process_receipt_with_textract(file_path):
     try:
-        img = cv2.imread(filename)
-        if img is None:
-            raise FileNotFoundError(f"Unable to read file: {filename}")
-    except FileNotFoundError as e:
-        print(f"File not found: {filename}")
-        return
+        # Load the image as bytes
+        with open(file_path, 'rb') as document:
+            image_bytes = document.read()
 
-    tmp_path = os.path.join(output_dir, "tmp_processed.jpg")
-    img = enhance_image(img, tmp_path, output_dir, rotate)
-    cv2.imwrite(tmp_path, img)
+        # Call Textract's AnalyzeExpense API
+        response = textract.analyze_expense(Document={'Bytes': image_bytes})
 
-    base_filename = os.path.basename(filename).split('.')[0]
-    output_path = os.path.join(output_dir, base_filename + ".txt")
-    print(f"Output path for OCR text: {output_path}")
+        # Extract key details from the response
+        receipt_data = extract_expense_details(response)
 
-    run_tesseract(tmp_path, output_path)
-    if not os.path.exists(output_path):
-        print(f"[ERROR] OCR text file not found: {output_path}")
+        return receipt_data
 
-    # Textract OCR, left commented out for now until QC logic is implemented
-    # textract_output_path = os.path.join(output_dir, filename.split(".")[0] + "_textract.txt")
-    # textract_text = run_textract(tmp_path)
-    # with open(textract_output_path, "w", encoding='utf-8') as out:
-    #     out.write(textract_text)
+    except Exception as e:
+        print(f"Error processing receipt: {e}")
+        return None
 
-# Main function to process the image based on user input.
+# Function to extract specific fields from AnalyzeExpense API response
+def extract_expense_details(response):
+    details = {
+        'TotalSpent': None,
+        'VendorName': None,
+        'VendorAddress': None,
+        'TransactionDate': None
+    }
+
+    # Iterate through expense documents
+    for document in response.get('ExpenseDocuments', []):
+        for summary_field in document.get('SummaryFields', []):
+            field_type = summary_field.get('Type', {}).get('Text', '')
+            field_value = summary_field.get('ValueDetection', {}).get('Text', '')
+
+            if field_type == 'TOTAL':
+                details['TotalSpent'] = field_value
+            elif field_type == 'VENDOR_NAME':
+                details['VendorName'] = field_value
+            elif field_type == 'VENDOR_ADDRESS':
+                details['VendorAddress'] = field_value
+            elif field_type == 'TRANSACTION_DATE':
+                details['TransactionDate'] = field_value
+
+    return details
+
+# Main function to handle user input and process receipts
 def main():
     image_path = input("Enter the image file name or path: ")
     if not os.path.isabs(image_path):
         image_path = os.path.join(os.getcwd(), image_path)
 
-    output_dir = os.path.join(os.getcwd(), "processed_images")
-    os.makedirs(output_dir, exist_ok=True)
+    if not os.path.exists(image_path):
+        print("File does not exist.")
+        return
 
-    process_receipt(image_path, output_dir)
+    print("Processing receipt...")
+    receipt_data = process_receipt_with_textract(image_path)
+
+    if receipt_data:
+        print("Receipt Details:")
+        print(json.dumps(receipt_data, indent=4))
+    else:
+        print("Failed to extract receipt details.")
 
 if __name__ == '__main__':
     main()
