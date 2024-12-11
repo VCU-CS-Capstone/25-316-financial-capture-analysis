@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 import os
-import cv2
-from data_pipeline import process_receipt  # Updated import after renaming main.py to data_pipeline.py
+from data_pipeline import process_receipt_with_textract
 from flask_cors import CORS
 
 # Initialize Flask app
@@ -26,24 +25,15 @@ def upload_receipt():
         file_path = os.path.join(upload_dir, file.filename)
         file.save(file_path)
 
-        # Process the receipt image
-        output_dir = os.path.join(os.getcwd(), 'processed_images')
-        os.makedirs(output_dir, exist_ok=True)
+        # Process the receipt image using Textract
+        receipt_data = process_receipt_with_textract(file_path)
 
-        process_receipt(file_path, output_dir)  # Ensure this function is correctly defined
-        output_text_file = os.path.join(output_dir, file.filename.split('.')[0] + '.txt')
+        if not receipt_data:
+            return jsonify({"error": "Failed to process receipt"}), 500
 
-        if not os.path.exists(output_text_file):
-            raise FileNotFoundError(f"Processed text file not found: {output_text_file}")
+        # Return the extracted data as JSON
+        return jsonify(receipt_data), 200
 
-        with open(output_text_file, 'r', encoding='utf-8') as f:
-            ocr_text = f.read()
-
-        return jsonify({"ocr_text": ocr_text}), 200
-
-    except FileNotFoundError as fnf_error:
-        print(f"File not found error: {fnf_error}")
-        return jsonify({"error": str(fnf_error)}), 500
     except Exception as e:
         print(f"Error occurred: {e}")
         return jsonify({"error": str(e)}), 500
