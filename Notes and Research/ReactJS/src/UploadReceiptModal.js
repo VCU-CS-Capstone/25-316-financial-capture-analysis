@@ -5,7 +5,7 @@ function UploadReceiptModal({ isOpen, onClose }) {
     const fileInputRef = useRef(null);
     const [uploadStatus, setUploadStatus] = useState('');
     const [loadingDots, setLoadingDots] = useState('');
-    const [ocrResult, setOcrResult] = useState('');
+    const [ocrResult, setOcrResult] = useState(null);
 
     useEffect(() => {
         if (uploadStatus === 'Uploading') {
@@ -40,7 +40,12 @@ function UploadReceiptModal({ isOpen, onClose }) {
 
                 if (response.ok) {
                     const data = await response.json();
-                    setOcrResult(data.ocr_text || 'No text extracted');
+                    setOcrResult({
+                        TotalSpent: data.TotalSpent || 'N/A',
+                        VendorName: data.VendorName || 'N/A',
+                        VendorAddress: data.VendorAddress || 'N/A',
+                        TransactionDate: data.TransactionDate || 'N/A',
+                    });
                     setUploadStatus('Upload successful!');
                 } else {
                     const errorData = await response.json();
@@ -70,7 +75,15 @@ function UploadReceiptModal({ isOpen, onClose }) {
                 <button className="upload-button" onClick={handleUploadClick}>Upload Receipt</button>
                 <button className="close-button" onClick={onClose}>Close</button>
                 {uploadStatus && <p>{uploadStatus}{uploadStatus === 'Uploading' ? loadingDots : ''}</p>}
-                {ocrResult && <p><strong>OCR Result:</strong> {ocrResult}</p>}
+                {ocrResult && (
+                    <div>
+                        <h3>OCR Result:</h3>
+                        <p><strong>Total Spent:</strong> {ocrResult.TotalSpent}</p>
+                        <p><strong>Vendor Name:</strong> {ocrResult.VendorName}</p>
+                        <p><strong>Vendor Address:</strong> {ocrResult.VendorAddress}</p>
+                        <p><strong>Date:</strong> {ocrResult.TransactionDate}</p>
+                    </div>
+                )}
             </div>
         </div>
     );
