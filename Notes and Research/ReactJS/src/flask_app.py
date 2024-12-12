@@ -2,10 +2,16 @@ from flask import Flask, request, jsonify
 import os
 from data_pipeline import process_receipt_with_textract
 from flask_cors import CORS
+import boto3
+from decimal import Decimal
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
+
+# Initialize DynamoDB client
+dynamodb = boto3.resource('dynamodb')
+receipts_table = dynamodb.Table('ReceiptsTable')
 
 # Endpoint for uploading an image and processing it
 @app.route('/upload-receipt', methods=['POST'])
@@ -36,6 +42,38 @@ def upload_receipt():
 
     except Exception as e:
         print(f"Error occurred: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# Endpoint for confirming and saving receipt data
+@app.route('/confirm-receipt', methods=['POST'])
+def confirm_receipt():
+    try:
+        data = request.json
+        print("Received data:", data)
+
+        # Prepare item for DynamoDB
+        receipt_item = {
+            'PK': f"vendor#{data.get('VendorName', 'unknown')}",
+            'SK': f"receipt#{data.get('TransactionDate', 'unknown')}",
+            'VendorName': data.get('VendorName'),
+            'VendorAddress': data.get('VendorAddress'),
+            'Date': data.get('TransactionDate'),
+            'TotalAmount': Decimal(str(data.get('TotalAmount', 0))) if data.get('TotalAmount') else None
+        }
+
+        # Remove None values from the item
+        receipt_item = {k: v for k, v in receipt_item.items() if v is not None}
+
+        print("Prepared item for DynamoDB:", receipt_item)
+
+        # Save to DynamoDB
+        receipts_table.put_item(Item=receipt_item)
+        print("Successfully added item to DynamoDB:", receipt_item)
+
+        return jsonify({"message": "Receipt saved successfully"}), 200
+
+    except Exception as e:
+        print(f"Error occurred while saving to DynamoDB: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
