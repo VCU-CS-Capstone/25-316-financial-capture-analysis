@@ -1,6 +1,7 @@
 import boto3
 import os
 import json
+from extract_entities import process_receipt_data
 
 # AWS Textract client setup
 textract = boto3.client('textract')
@@ -66,6 +67,11 @@ def main():
     if receipt_data:
         print("Receipt Details:")
         print(json.dumps(receipt_data, indent=4))
+
+        # Pass the extracted details to the DynamoDB processing function
+        print("Saving receipt data to DynamoDB...")
+        process_receipt_data(receipt_data)
+
     else:
         print("Failed to extract receipt details.")
 
