@@ -1,28 +1,30 @@
 import React, { useRef, useState, useEffect } from 'react';
-import './UploadModal.css'; // CSS file for styling
+import './UploadModal.css';
 
 function UploadReceiptModal({ isOpen, onClose }) {
     const fileInputRef = useRef(null);
     const [uploadStatus, setUploadStatus] = useState('');
     const [loadingDots, setLoadingDots] = useState('');
     const [ocrResult, setOcrResult] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedData, setEditedData] = useState(null);
 
     useEffect(() => {
         if (uploadStatus === 'Uploading') {
             const interval = setInterval(() => {
                 setLoadingDots(prev => {
-                    if (prev.length >= 3) return ''; // Reset after '...'
+                    if (prev.length >= 3) return '';
                     return prev + '.';
-                });
-            }, 200); // Adjust the speed as necessary
-            return () => clearInterval(interval);
+                }, 200);
+                return () => clearInterval(interval);
+            });
         }
     }, [uploadStatus]);
 
     if (!isOpen) return null;
 
     const handleUploadClick = () => {
-        fileInputRef.current.click(); // Programmatically triggers the file input click
+        fileInputRef.current.click();
     };
 
     const handleFileChange = async (event) => {
@@ -40,20 +42,60 @@ function UploadReceiptModal({ isOpen, onClose }) {
 
                 if (response.ok) {
                     const data = await response.json();
+                    console.log("Backend Response:", data);
                     setOcrResult({
-                        TotalSpent: data.TotalSpent || 'N/A',
-                        VendorName: data.VendorName || 'N/A',
-                        VendorAddress: data.VendorAddress || 'N/A',
-                        TransactionDate: data.TransactionDate || 'N/A',
+                        TotalAmount: data.TotalAmount || '',
+                        VendorName: data.VendorName || '',
+                        VendorAddress: data.VendorAddress || '',
+                        TransactionDate: data.TransactionDate || '',
+                    });
+                    setEditedData({
+                        TotalAmount: data.TotalAmount || '',
+                        VendorName: data.VendorName || '',
+                        VendorAddress: data.VendorAddress || '',
+                        TransactionDate: data.TransactionDate || '',
                     });
                     setUploadStatus('Upload successful!');
                 } else {
                     const errorData = await response.json();
+                    console.log("Error Response:", errorData);
                     setUploadStatus(`Error: ${errorData.error}`);
                 }
             } catch (error) {
+                console.log("Upload Failed Error:", error);
                 setUploadStatus(`Upload failed: ${error.message}`);
             }
+        }
+    };
+
+    const handleEditChange = (event) => {
+        const { name, value } = event.target;
+        setEditedData(prev => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleConfirm = async () => {
+        console.log("Data being sent to database:", editedData);
+        try {
+            const response = await fetch('http://localhost:5000/confirm-receipt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editedData),
+            });
+
+            if (response.ok) {
+                alert('Receipt data saved successfully!');
+                setOcrResult(null);
+                setEditedData(null);
+                setUploadStatus('');
+                onClose();
+            } else {
+                alert('Failed to save receipt data.');
+            }
+        } catch (error) {
+            alert(`Error: ${error.message}`);
         }
     };
 
@@ -74,14 +116,36 @@ function UploadReceiptModal({ isOpen, onClose }) {
                 />
                 <button className="upload-button" onClick={handleUploadClick}>Upload Receipt</button>
                 <button className="close-button" onClick={onClose}>Close</button>
-                {uploadStatus && <p>{uploadStatus}{uploadStatus === 'Uploading' ? loadingDots : ''}</p>}
+                {uploadStatus && <p className="upload-status">{uploadStatus}{uploadStatus === 'Uploading' ? loadingDots : ''}</p>}
                 {ocrResult && (
                     <div>
-                        <h3>OCR Result:</h3>
-                        <p><strong>Total Spent:</strong> {ocrResult.TotalSpent}</p>
-                        <p><strong>Vendor Name:</strong> {ocrResult.VendorName}</p>
-                        <p><strong>Vendor Address:</strong> {ocrResult.VendorAddress}</p>
-                        <p><strong>Date:</strong> {ocrResult.TransactionDate}</p>
+                        <h5>Please Confirm the following values:</h5>
+                        <div style={{ textAlign: 'left', marginLeft: '20px' }}>
+                            {Object.entries(editedData).map(([key, value]) => (
+                                <div key={key}>
+                                    <label><strong>{key}:</strong></label>
+                                    {isEditing ? (
+                                        <input
+                                            type="text"
+                                            name={key}
+                                            value={value}
+                                            onChange={handleEditChange}
+                                            style={{ marginLeft: '10px' }}
+                                        />
+                                    ) : (
+                                        <span style={{ marginLeft: '10px' }}> {value}</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        {!isEditing ? (
+                            <div className="ocr-buttons">
+                                <button onClick={() => setIsEditing(true)}>Edit</button>
+                                <button onClick={handleConfirm}>Confirm</button>
+                            </div>
+                        ) : (
+                            <button onClick={() => setIsEditing(false)}>Done Editing</button>
+                        )}
                     </div>
                 )}
             </div>
