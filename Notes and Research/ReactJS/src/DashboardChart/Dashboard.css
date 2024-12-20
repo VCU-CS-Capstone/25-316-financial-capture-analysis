@@ -41,6 +41,12 @@
   left: 320px;
 }
 
+.Subheading-category{
+  position:absolute;
+  top: 130px;
+  left: 600px;
+}
+
 .BodyContainer{
   position: absolute;
   left: 320px;

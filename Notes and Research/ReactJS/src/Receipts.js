@@ -89,7 +89,7 @@ const Receipts = () => {
                             .map((item, index) => (
                             <tr key={index}>
                                 <td>{item.Date}</td>
-                                <td>{item.TotalAmount}</td>
+                                <td>${item.TotalAmount}</td>
                                 <td>{item.TotalItems}</td>
                                 <td>{item.VendorName}</td>
                                 <td>{item.VendorAddress}</td>
