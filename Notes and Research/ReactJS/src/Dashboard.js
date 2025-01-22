@@ -17,10 +17,10 @@ const Dashboard = () => {
     const [selectedCategory, setSelectedCategory] = useState(null);
 
     const currentDate = new Date();
-    const currentDay = currentDate.getDate();                                                       //Gets current date
+    // const currentDay = currentDate.getDate();                                                       //Gets current date
     const currentYear = new Date().getFullYear();                                                   //Gets current year
     const currentMonthIndex = currentDate.getMonth();                                               //Gets current month
-    const currentMonthName = new Intl.DateTimeFormat('en-US', {month: 'long'}).format(currentDate); //Gets current month name
+    // const currentMonthName = new Intl.DateTimeFormat('en-US', {month: 'long'}).format(currentDate); //Gets current month name
     const daysInMonth = new Date(new Date().getFullYear(), currentMonthIndex, 0).getDate();         //Gets the number of days in current month
     // Generates x-axis labels 1 to n days in the current month
     const xlabels = [];
@@ -174,9 +174,9 @@ const Dashboard = () => {
                     datasets: [
                         {
                             data: chartData,
-                            backgroundColor: chartLabels.map(
-                                () => `hsl(${Math.random() * 360}, 70%, 60%)` // Assign random colors
-                            )
+                            // backgroundColor: chartLabels.map(
+                            //     () => `hsl(${Math.random() * 360}, 70%, 60%)` // Assign random colors
+                            // )
                         }
                     ]
                 },
@@ -197,44 +197,102 @@ const Dashboard = () => {
     };
 
     // Initialize Line Chart
-    // useEffect(() => {
-        // if (data && chartRef.current) {
-        //     const ctx = chartRef.current.getContext('2d');
-        //     const transactionsPerDay = calculateDailyTransactions();    //Gets the transaction data per day
-        //     const toCurrentDayData = transactionsPerDay.slice(0, currentDay);
-
-        //     // Destroy previous instance if exists
-        //     if (lineChartRef.current) {
-        //         lineChartRef.current.destroy();
-        //     }
-
-        //     lineChartRef.current = new Chart(ctx, {
-        //         type: 'line',
-        //         data: {
-        //             labels: xlabels,
-        //             datasets: [{
-        //                 label: data,
-        //                 data: toCurrentDayData,
-        //             }]
-        //         },
-        //         options: {
-        //             plugins: {
-        //                 legend: {
-        //                     display: false
-        //                 }
-        //             },
-        //             scales:{
-        //                 x:{
-        //                     title:{
-        //                         display: true,
-        //                         text: currentMonthName
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     });
-        // }
-    // }, []);
+    useEffect(() => {
+        if (chartRef.current && data.length) {
+            const ctx = chartRef.current.getContext('2d');
+    
+            // Extract start and end dates from dateRange
+            const [startDate, endDate] = dateRange || [null, null];
+    
+            let filteredData;
+    
+            if (startDate && endDate) {
+                // Filter data based on the provided date range
+                filteredData = data.filter(item => {
+                    const itemDate = new Date(item.Date);
+                    return (
+                        itemDate instanceof Date &&
+                        !isNaN(itemDate) &&
+                        itemDate >= startDate &&
+                        itemDate <= endDate
+                    );
+                });
+            } else {
+                // Default to the last 30 days if no date range is selected
+                const now = new Date(); // Current date and time
+                const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000)); // Date 30 days ago
+            
+                filteredData = data.filter(item => {
+                    const itemDate = new Date(item.Date); // Parse the item's date
+                    return (
+                        itemDate instanceof Date &&
+                        !isNaN(itemDate) && // Ensure the date is valid
+                        itemDate >= thirtyDaysAgo && // Check if it's within the last 30 days
+                        itemDate <= now // Ensure it's not in the future
+                    );
+                });
+            }
+    
+            // Sort data by date for proper ordering
+            const sortedData = filteredData.sort((a, b) => new Date(a.Date) - new Date(b.Date));
+    
+            // Create labels and data points
+            const labels = sortedData.map(item => new Date(item.Date).toLocaleDateString('en-US', { day: 'numeric' }));
+            const amounts = sortedData.map(item => item.TotalAmount);
+    
+            // Debugging logs
+            console.log("Filtered Data:", sortedData);
+            console.log("Labels:", labels);
+            console.log("Amounts:", amounts);
+    
+            // Destroy existing chart instance to avoid duplication
+            if (lineChartRef.current) {
+                lineChartRef.current.destroy();
+            }
+    
+            // Update chart title based on whether date range is set
+            const chartTitle = startDate && endDate
+                ? `Expenses from ${startDate.toLocaleDateString('en-US')} to ${endDate.toLocaleDateString('en-US')}`
+                : `Expenses for ${new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date())}`;
+    
+            // Initialize the line chart
+            lineChartRef.current = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Daily Expenses",
+                        data: amounts,
+                        borderColor: '#4CAF50',
+                        tension: 0.4,
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: true,
+                        },
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: chartTitle,
+                            },
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: "Amount ($)",
+                            },
+                        },
+                    },
+                },
+            });
+        }
+    }, [data, dateRange]);
+    
+    
 
     if (loading) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Loading...</p>;
     if (error) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Error: {error}</p>;
@@ -243,7 +301,7 @@ const Dashboard = () => {
         <div>
             <h1 className='Headings'>Dashboard</h1>
             <DateRangePicker showOneCalendar size="sm" format="yyyy/MM/dd" className='Subheading' onChange={handleDateChange}/>
-            <div className='Subheading-category'>
+            <div className='Subheading-category dropdown-menu'>
                 <Dropdown
                     options={[...new Set(data.map(item => item.ExpenseType).filter(Boolean))]}
                     onChange={handleCategoryChange}
