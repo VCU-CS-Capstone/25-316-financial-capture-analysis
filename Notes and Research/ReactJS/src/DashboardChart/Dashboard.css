@@ -142,3 +142,13 @@ th {
   /* border-left: 1px solid #000000;
   border-right: 1px solid #000000; */
 }
+
+.dropdown-menu {
+  width: 200px;
+}
+
+.search-bar{
+  left: 805px;
+  height: 38px;
+  width: 350px;
+}

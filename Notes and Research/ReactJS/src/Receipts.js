@@ -11,6 +11,9 @@ const Receipts = () => {
     const [error, setError] = useState(null);
     const [dateRange, setDateRange] = useState([null, null]);
     const [selectedCategory, setSelectedCategory] = useState(null);
+
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filteredReceipts, setFilteredReceipts] = useState([]);
   
     const handleDateChange = (range) => {
         setDateRange(range);
@@ -51,6 +54,21 @@ const Receipts = () => {
   
         fetchData();
     }, []);
+
+    // Search bar
+        useEffect(() => {
+            if (searchTerm.trim() === "") {
+                setFilteredReceipts(data); // Show all receipts when search term is empty
+            } else {
+                const lowercasedTerm = searchTerm.toLowerCase();
+                const filtered = data.filter(receipt =>
+                    Object.values(receipt).some(value =>
+                        String(value).toLowerCase().includes(lowercasedTerm)
+                    )
+                );
+                setFilteredReceipts(filtered); // Show receipts with search name
+            }
+        }, [searchTerm, data]);
     
     const handleCategoryChange = (option) => {
         setSelectedCategory(option.value); // Update state with the selected category
@@ -70,6 +88,13 @@ const Receipts = () => {
                     placeholder="Select a category"
                 />
             </div>
+            <input
+                type="text"
+                placeholder="Search receipts..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="Subheading-category search-bar"
+            />
             <div className='BodyContainer BodyContainer-wide shadow roundBorder'>
                 <table >
                     <thead className='roundBorder'>
@@ -82,7 +107,9 @@ const Receipts = () => {
                         <th>Category</th>
                     </thead>
                     <tbody>
-                    {data.filter(item => {
+                    {data
+                        .filter(item => {
+                            // Date filtering
                             const isDateValid = (() => {
                                 if (dateRange && dateRange.length === 2) {
                                     const [startDate, endDate] = dateRange;
@@ -96,11 +123,24 @@ const Receipts = () => {
                                 return true; // No date range filtering
                             })();
 
+                            // Category filtering
                             const isCategoryValid = selectedCategory
                                 ? item.ExpenseType === selectedCategory
                                 : true; // No category filtering if none selected
 
-                            return isDateValid && isCategoryValid;
+                            // Search term filtering
+                            const isSearchTermValid = (() => {
+                                if (!searchTerm.trim()) return true; // No search term filtering
+                                const lowercasedTerm = searchTerm.toLowerCase();
+                                return (
+                                    item.VendorName?.toLowerCase().includes(lowercasedTerm) ||
+                                    item.VendorAddress?.toLowerCase().includes(lowercasedTerm) ||
+                                    String(item.TotalAmount).toLowerCase().includes(lowercasedTerm) ||
+                                    item.ExpenseType?.toLowerCase().includes(lowercasedTerm)
+                                );
+                            })();
+
+                            return isDateValid && isCategoryValid && isSearchTermValid;
                         })
                         .sort((a, b) => new Date(b.Date) - new Date(a.Date)) // Sort by date
                         .map((item, index) => (

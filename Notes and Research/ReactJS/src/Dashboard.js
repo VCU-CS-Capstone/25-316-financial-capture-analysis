@@ -13,15 +13,18 @@ const Dashboard = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // FILTERING OPTIONS
     const [dateRange, setDateRange] = useState([null, null]);
     const [selectedCategory, setSelectedCategory] = useState(null);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filteredReceipts, setFilteredReceipts] = useState([]);
 
     const currentDate = new Date();
-    // const currentDay = currentDate.getDate();                                                       //Gets current date
-    const currentYear = new Date().getFullYear();                                                   //Gets current year
-    const currentMonthIndex = currentDate.getMonth();                                               //Gets current month
+    // const currentDay = currentDate.getDate();
+    const currentYear = new Date().getFullYear();
+    const currentMonthIndex = currentDate.getMonth();
     // const currentMonthName = new Intl.DateTimeFormat('en-US', {month: 'long'}).format(currentDate); //Gets current month name
-    const daysInMonth = new Date(new Date().getFullYear(), currentMonthIndex, 0).getDate();         //Gets the number of days in current month
+    const daysInMonth = new Date(new Date().getFullYear(), currentMonthIndex, 0).getDate();
     // Generates x-axis labels 1 to n days in the current month
     const xlabels = [];
     for (let i =1; i <=daysInMonth; i++){
@@ -29,8 +32,8 @@ const Dashboard = () => {
     }
     // Filters the data to only incude items from the current year
     const filterYearData = data.filter(item => {
-        const itemsYear = new Date(item.Date).getFullYear();                    //extracts the year
-        return itemsYear === currentYear;                                       //only keeps items from the current year
+        const itemsYear = new Date(item.Date).getFullYear();
+        return itemsYear === currentYear;
     });
     // Filters the data to only include items from the current year and month
     const filterMonthData = data.filter(item => {
@@ -41,16 +44,16 @@ const Dashboard = () => {
     });
     // Calculates the number of transactions per day in the current month
     const calculateDailyTransactions = () => {
-        const transactionsPerDay = new Array(daysInMonth).fill(0);              //Array initialized with 0's for each day of the month
+        const transactionsPerDay = new Array(daysInMonth).fill(0);
 
         filterMonthData.forEach(item => {
             const itemDate = new Date(item.Date);
-            const dayOfMonth = itemDate.getDate();                              //Gets the day of the month
+            const dayOfMonth = itemDate.getDate();
             if (dayOfMonth >= 1 && dayOfMonth <= daysInMonth){
-                transactionsPerDay[dayOfMonth-1]++;                             //Increments the transaction count for that day
+                transactionsPerDay[dayOfMonth-1]++;
             }
         });
-        return transactionsPerDay;                                              //Keeps the value as 0 if no transactions occurred
+        return transactionsPerDay;
     }
 
     const handleDateChange = (range) => {
@@ -174,9 +177,6 @@ const Dashboard = () => {
                     datasets: [
                         {
                             data: chartData,
-                            // backgroundColor: chartLabels.map(
-                            //     () => `hsl(${Math.random() * 360}, 70%, 60%)` // Assign random colors
-                            // )
                         }
                     ]
                 },
@@ -226,9 +226,9 @@ const Dashboard = () => {
                     const itemDate = new Date(item.Date); // Parse the item's date
                     return (
                         itemDate instanceof Date &&
-                        !isNaN(itemDate) && // Ensure the date is valid
-                        itemDate >= thirtyDaysAgo && // Check if it's within the last 30 days
-                        itemDate <= now // Ensure it's not in the future
+                        !isNaN(itemDate) &&             // Ensure the date is valid
+                        itemDate >= thirtyDaysAgo &&    // Check if it's within the last 30 days
+                        itemDate <= now                 // Only use present or past items
                     );
                 });
             }
@@ -292,7 +292,21 @@ const Dashboard = () => {
         }
     }, [data, dateRange]);
     
-    
+    // Search bar
+    useEffect(() => {
+        if (searchTerm.trim() === "") {
+            setFilteredReceipts(data); // Show all receipts when search term is empty
+        } else {
+            const lowercasedTerm = searchTerm.toLowerCase();
+            const filtered = data.filter(receipt =>
+                Object.values(receipt).some(value =>
+                    String(value).toLowerCase().includes(lowercasedTerm)
+                )
+            );
+            setFilteredReceipts(filtered); // Show receipts with search name
+        }
+    }, [searchTerm, data]);
+
 
     if (loading) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Loading...</p>;
     if (error) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Error: {error}</p>;
@@ -308,6 +322,14 @@ const Dashboard = () => {
                     placeholder="Select a category"
                 />
             </div>
+            <input
+                type="text"
+                placeholder="Search receipts..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="Subheading-category search-bar"
+            />
+
             <div className='flexContainer'>
                 <div className='BodyContainer BodyContainer-first shadow roundBorder'>
                     Total of Monthly Expenses
@@ -341,12 +363,12 @@ const Dashboard = () => {
                                         return itemDate >= startDate && itemDate <= endDate;
                                     }
                                 }
-                                return true; // No date range filtering
+                                return true;
                             })();
 
                             const isCategoryValid = selectedCategory
-                                ? item.ExpenseType === selectedCategory
-                                : true; // No category filtering if none selected
+                                ? item.ExpenseType === selectedCategory     // Only display items with matching category
+                                : true;                                     // No category filtering if none selected
 
                             return isDateValid && isCategoryValid;
                         })
