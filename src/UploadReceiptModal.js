@@ -8,6 +8,7 @@ function UploadReceiptModal({ isOpen, onClose }) {
     const [ocrResult, setOcrResult] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editedData, setEditedData] = useState(null);
+    const [expenseCategory, setExpenseCategory] = useState('');
 
     useEffect(() => {
         if (uploadStatus === 'Uploading') {
@@ -54,6 +55,7 @@ function UploadReceiptModal({ isOpen, onClose }) {
                         VendorName: data.VendorName || '',
                         VendorAddress: data.VendorAddress || '',
                         TransactionDate: data.TransactionDate || '',
+                        ExpenseCategory: '', // Add the category field
                     });
                     setUploadStatus('Upload successful!');
                 } else {
@@ -76,25 +78,50 @@ function UploadReceiptModal({ isOpen, onClose }) {
         }));
     };
 
+    const handleCategoryConfirm = (category) => {
+        setExpenseCategory(category);
+        setEditedData(prev => ({
+            ...prev,
+            ExpenseCategory: category,
+        }));
+    };
+
     const handleConfirm = async () => {
-        console.log("Data being sent to database:", editedData);
+        if (!expenseCategory) {
+            alert("Please select an expense category before confirming!");
+            return;
+        }
+        
+        const payload = {
+            ...editedData,
+            ExpenseType: expenseCategory,
+        };
+
+        console.log("Data being sent to database:", payload);
+
         try {
             const response = await fetch('http://localhost:5000/confirm-receipt', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(editedData),
+                body: JSON.stringify(payload),
             });
 
-            if (response.ok) {
-                alert('Receipt data saved successfully!');
-                setOcrResult(null);
-                setEditedData(null);
-                setUploadStatus('');
-                onClose();
-            } else {
-                alert('Failed to save receipt data.');
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Backend error response:", errorText);
+                throw new Error(`Failed to save receipt data: ${errorText}`);
             }
+
+            const responseData = await response.json();
+            console.log("Response from backend:", responseData);
+            alert('Receipt data saved successfully!');
+            setOcrResult(null);
+            setEditedData(null);
+            setUploadStatus('');
+            setExpenseCategory('');
+            onClose();
         } catch (error) {
+            console.error("Fetch error:", error);
             alert(`Error: ${error.message}`);
         }
     };
@@ -102,10 +129,17 @@ function UploadReceiptModal({ isOpen, onClose }) {
     return (
         <div className="modal-overlay">
             <div className="modal-content">
-                <h2>Receipt Upload Instructions</h2>
+                <div className="modal-header">
+                    <button className="close-button" onClick={onClose}>
+                        &times;
+                    </button>
+                </div>
+                <h2 style={{ fontSize: '25px', textAlign: 'left' }}>Photo Tips</h2>
+                <h2 style={{ fontSize: '17px', textAlign: 'left' }}>For best results-</h2>
                 <ul style={{ textAlign: 'left' }}>
                     <li>Place the receipt on a dark, flat surface with the receipt centered in the frame.</li>
                     <li>Minimize any objects or clutter around the receipt to avoid interference.</li>
+                    <li>Position the camera directly over your receipt, not at an angle</li>
                 </ul>
                 <input
                     type="file"
@@ -115,33 +149,74 @@ function UploadReceiptModal({ isOpen, onClose }) {
                     onChange={handleFileChange}
                 />
                 <button className="upload-button" onClick={handleUploadClick}>Upload Receipt</button>
-                <button className="close-button" onClick={onClose}>Close</button>
                 {uploadStatus && <p className="upload-status">{uploadStatus}{uploadStatus === 'Uploading' ? loadingDots : ''}</p>}
                 {ocrResult && (
                     <div>
                         <h5>Please Confirm the following values:</h5>
                         <div style={{ textAlign: 'left', marginLeft: '20px' }}>
                             {Object.entries(editedData).map(([key, value]) => (
-                                <div key={key}>
-                                    <label><strong>{key}:</strong></label>
-                                    {isEditing ? (
-                                        <input
-                                            type="text"
-                                            name={key}
-                                            value={value}
-                                            onChange={handleEditChange}
-                                            style={{ marginLeft: '10px' }}
-                                        />
-                                    ) : (
-                                        <span style={{ marginLeft: '10px' }}> {value}</span>
-                                    )}
-                                </div>
+                                key !== 'ExpenseCategory' && ( // Exclude ExpenseCategory
+                                    <div key={key}>
+                                        <label><strong>{key}:</strong></label>
+                                        {isEditing ? (
+                                            <input
+                                                type="text"
+                                                name={key}
+                                                value={value}
+                                                onChange={handleEditChange}
+                                                style={{ marginLeft: '10px' }}
+                                            />
+                                        ) : (
+                                            <span style={{ marginLeft: '10px' }}> {value}</span>
+                                        )}
+                                    </div>
+                                )
                             ))}
                         </div>
+
+                        {/* Dedicated Dropdown for ExpenseCategory */}
+                        <div style={{ marginTop: '10px', textAlign: 'left', marginLeft: '20px' }}>
+                            <label htmlFor="expenseCategory"><strong>ExpenseCategory:</strong></label>
+                            <select
+                                id="expenseCategory"
+                                value={expenseCategory}
+                                onChange={(e) => {
+                                    setExpenseCategory(e.target.value);
+                                    setEditedData((prev) => ({
+                                        ...prev,
+                                        ExpenseCategory: e.target.value,
+                                    }));
+                                }}
+                                style={{ marginLeft: '10px' }}
+                            >
+                                <option value="" disabled>Select Category</option>
+                                <option value="Restaurant">Restaurant</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Gas">Gas</option>
+                                <option value="Utilities">Utilities</option>
+                                <option value="Grocery">Grocery</option>
+                                <option value="Other">Other</option>
+                                <option value="Housing">Housing</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Travel">Travel</option>
+                                <option value="Insurance">Insurance</option>
+                                <option value="Healthcare/Medical">Healthcare/Medical</option>
+                                <option value="Education">Education</option>
+                                <option value="Subscriptions">Subscriptions</option>
+                                <option value="Transportation">Transportation</option>
+                                <option value="Gifts/Donations">Gifts/Donations</option>
+                                <option value="Childcare">Childcare</option>
+                                <option value="Personal Care">Personal Care</option>
+                                <option value="Pets">Pets</option>
+                            </select>
+                        </div>
+
                         {!isEditing ? (
-                            <div className="ocr-buttons">
+                            <div className="ocr-buttons" style={{ marginTop: '10px' }}>
                                 <button onClick={() => setIsEditing(true)}>Edit</button>
-                                <button onClick={handleConfirm}>Confirm</button>
+                                <button onClick={handleConfirm} disabled={!expenseCategory}>
+                                    Confirm
+                                </button>
                             </div>
                         ) : (
                             <button onClick={() => setIsEditing(false)}>Done Editing</button>
