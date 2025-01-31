@@ -11,6 +11,7 @@
 }
 
 .modal-content {
+    position: relative;
     background: white;
     padding: 20px;
     border-radius: 10px;
@@ -31,8 +32,30 @@
     margin-top: 15px;
 }
 
-.upload-button, .close-button {
-    margin: 10px;
+.upload-button {
+    min-width: 0; /* Prevent it from having a minimum size */
+    max-width: none; /* Remove any max size */
+    width: auto !important; /* Keep width relative to the text within the button */
+    padding: 5px 5px;
     text-align: center; /* Keep buttons centered */
     display: inline-block;
+    font-size: 1rem;
+    cursor: pointer;
 }
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #333;
+}
+
+.close-button:hover {
+    color: #ff0000; 
+}
+
