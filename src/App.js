@@ -37,6 +37,7 @@ function RecButton(){
   );
 }
 
+/*
 function DealButton(){
   return (
     <div>
@@ -44,6 +45,7 @@ function DealButton(){
     </div>
   );
 }
+*/
 
 function UploadButton({ onClick }) {
   return (
@@ -74,12 +76,19 @@ function App() {
       }}>
         <Navbar />
         <Routes>
-          <Route path="/DashBoard" element={<Dashboard />} />
+          {/* Add a default route for "/" */}
+          <Route path="/" element={<Dashboard />} />
+
+          {/* Existing routes */}
+          <Route path="/Dashboard" element={<Dashboard />} />
           <Route path="/Receipts" element={<Receipts />} />
+
+          {/* Fallback route for undefined paths */}
+          <Route path="*" element={<Dashboard />} />
         </Routes>
+
         <DashButton />
         <RecButton />
-        <DealButton />
         <UploadButton onClick={() => setIsModalOpen(true)} />
         
         {isModalOpen && (
