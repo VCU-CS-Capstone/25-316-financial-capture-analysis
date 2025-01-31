@@ -447,11 +447,6 @@ const Dashboard = () => {
                     </table>
                     </div>
                 </div>
-
-                <div className='BodyContainer BodyContainer-fourth shadow roundBorder'>
-                    Nearby Deals
-                </div>
-
             </div>
         </div>
     );
