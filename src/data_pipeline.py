@@ -1,6 +1,7 @@
 import boto3
 import os
 import json
+import re
 from extract_entities import process_receipt_data
 
 # AWS Textract client setup
@@ -34,6 +35,9 @@ def extract_expense_details(response):
         'TransactionDate': None
     }
 
+    # Regex pattern to match common date formats
+    date_pattern = r'\b(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|\d{4}[-/]\d{1,2}[-/]\d{1,2})\b'
+    
     # Iterate through expense documents
     for document in response.get('ExpenseDocuments', []):
         for summary_field in document.get('SummaryFields', []):
@@ -41,13 +45,28 @@ def extract_expense_details(response):
             field_value = summary_field.get('ValueDetection', {}).get('Text', '')
 
             if field_type == 'TOTAL':
-                details['TotalSpent'] = field_value
+                details['TotalAmount'] = field_value
             elif field_type == 'VENDOR_NAME':
                 details['VendorName'] = field_value
             elif field_type == 'VENDOR_ADDRESS':
                 details['VendorAddress'] = field_value
-            elif field_type == 'TRANSACTION_DATE':
-                details['TransactionDate'] = field_value
+            elif field_type in ['TRANSACTION_DATE', 'DATE', 'INVOICE_RECEIPT_DATE']:
+                if field_value and re.match(date_pattern, field_value):
+                    details['TransactionDate'] = field_value
+
+    # If no TransactionDate is found, search the entire text for a potential date
+    if not details['TransactionDate']:
+        raw_text = " ".join([
+            field.get('ValueDetection', {}).get('Text', '')
+            for document in response.get('ExpenseDocuments', [])
+            for field in document.get('SummaryFields', [])
+        ])
+        dates = re.findall(date_pattern, raw_text)
+        if dates:
+            details['TransactionDate'] = dates[0]  # Take the first matched date
+
+    if details['VendorName'] and details['VendorAddress']:
+        details['VendorAddress'] = details['VendorAddress'].replace(details['VendorName'], '').strip()
 
     return details
 
