@@ -1,0 +1,154 @@
+
+.SideButtons{
+  background-color: #106666;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 28px;
+  width: 300px;
+  margin-bottom: 5px;
+}
+.RecButton{
+  background-color: #106666;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 28px;
+  width: 300px;
+  margin-top: 590px;
+}
+
+.SideButtons:Hover{
+  background-color: #0a4242;
+  color: WHITE;
+}
+
+.Headings{
+  position:absolute;
+  top: 70px;
+  left: 320px;
+}
+
+.Subheading{
+  position:absolute;
+  top: 130px;
+  left: 320px;
+}
+
+.Subheading-category{
+  position:absolute;
+  top: 130px;
+  left: 600px;
+}
+
+.BodyContainer{
+  position: absolute;
+  left: 320px;
+  background-color: rgb(255, 254, 254);
+  padding: 15px 15px;
+  margin: auto;
+  width: 770px;
+  height: auto;
+  min-height: 380px;
+}
+
+.BodyContainer-first {
+  top: 180px;
+}
+
+.BodyContainer-second {
+  top: 609px;
+}
+
+
+.BodyContainer-third {
+  display: flex; /* Enable Flexbox */
+  justify-content: center; /* Center horizontally */
+  align-items: center;
+  position: absolute;
+  width: 770px;
+  height: 380px;
+  background-color: white;
+  top: 180px;
+  left: 1120px;
+}
+
+.BodyContainer-third .donutChart {
+  /* max-width: 50%; */
+  max-height: 300px;
+  height: max-content;           /* Maintain aspect ratio */
+}
+
+.BodyContainer-fourth {
+  top: 610px;
+  left: 1120px;
+}
+
+.BodyContainer-wide {
+  top: 180px;
+  width: 1500px;
+}
+
+
+.shadow{
+	box-shadow: 0 5px 15px 0 grey;
+}
+
+.roundBorder{
+  border-radius: 15px;
+}
+
+.flexContainer{
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  gap: 20px;
+}
+
+
+table {
+  width: 100%;
+  display: table;
+  border-collapse: collapse;
+}
+
+tr {
+  border-bottom: 1px solid #ccc;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+td, th {
+  text-align: left;
+  vertical-align: top;
+  padding: 8px 8px;
+}
+
+th {
+  /* text-align: center; */
+  background-color: #82b0ff;
+  border-bottom: 2px solid #000000;
+  /* border-left: 1px solid #000000;
+  border-right: 1px solid #000000; */
+}
+
+.dropdown-menu {
+  width: 200px;
+}
+
+.search-bar{
+  left: 805px;
+  height: 38px;
+  width: 350px;
+}
