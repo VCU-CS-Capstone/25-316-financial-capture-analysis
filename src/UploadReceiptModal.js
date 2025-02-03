@@ -49,13 +49,15 @@ function UploadReceiptModal({ isOpen, onClose }) {
                         VendorName: data.VendorName || '',
                         VendorAddress: data.VendorAddress || '',
                         TransactionDate: data.TransactionDate || '',
+                        ImageURL: data.ImageURL || data.mageURL || '',
                     });
                     setEditedData({
                         TotalAmount: data.TotalAmount || '',
                         VendorName: data.VendorName || '',
                         VendorAddress: data.VendorAddress || '',
                         TransactionDate: data.TransactionDate || '',
-                        ExpenseCategory: '', // Add the category field
+                        ImageURL: data.ImageURL || '',
+                        ExpenseCategory: '', 
                     });
                     setUploadStatus('Upload successful!');
                 } else {
