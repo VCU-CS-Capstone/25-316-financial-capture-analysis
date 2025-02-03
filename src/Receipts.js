@@ -150,7 +150,19 @@ const Receipts = () => {
                                 <td>{item.TotalItems}</td>
                                 <td>{item.VendorName}</td>
                                 <td>{item.VendorAddress}</td>
-                                <td>{item.ImageURL}</td>
+                                <td>
+                                {item.ImageURL ? (
+                                    <a
+                                    href={item.ImageURL}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    >
+                                    View Receipt
+                                    </a>
+                                ) : (
+                                    'No Image'
+                                )}
+                                </td>
                                 <td>{item.ExpenseType}</td>
                             </tr>
                         ))}
