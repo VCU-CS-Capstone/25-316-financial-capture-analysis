@@ -51,8 +51,14 @@ def upload_receipt():
             return jsonify({"error": "Failed to process receipt"}), 500
         
         
-        # Include S3 image URL in the response
-        receipt_data['ImageURL'] = image_url
+        # If the data contains the typo key, fix it:
+        if 'mageURL' in receipt_data:
+            # Remap it to the correct key and remove the old one.
+            receipt_data['ImageURL'] = receipt_data.pop('mageURL')
+        else:
+            # Otherwise, use the S3 URL returned from the upload function.
+            receipt_data['ImageURL'] = image_url
+
         print(f"Extracted receipt data: {receipt_data}")
         return jsonify(receipt_data), 200
 
