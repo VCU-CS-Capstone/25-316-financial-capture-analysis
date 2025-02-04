@@ -10,17 +10,17 @@ function UploadReceiptModal({ isOpen, onClose }) {
     const [editedData, setEditedData] = useState(null);
     const [expenseCategory, setExpenseCategory] = useState('');
 
+    //animation for image/receipt uploading message
     useEffect(() => {
         if (uploadStatus === 'Uploading') {
             const interval = setInterval(() => {
-                setLoadingDots(prev => {
-                    if (prev.length >= 3) return '';
-                    return prev + '.';
-                }, 200);
-                return () => clearInterval(interval);
-            });
+                setLoadingDots(prev => (prev.length >= 3 ? '' : prev + '.'));
+            }, 400); // Adjust this value to slow down the animation
+    
+            return () => clearInterval(interval); 
         }
     }, [uploadStatus]);
+    
 
     if (!isOpen) return null;
 
@@ -154,63 +154,66 @@ function UploadReceiptModal({ isOpen, onClose }) {
                 {uploadStatus && <p className="upload-status">{uploadStatus}{uploadStatus === 'Uploading' ? loadingDots : ''}</p>}
                 {ocrResult && (
                     <div>
-                        <h5>Please Confirm the following values:</h5>
-                        <div style={{ textAlign: 'left', marginLeft: '20px' }}>
+                        <h5>Please confirm the following values and select an expense category:</h5>
+                        <div style={{ textAlign: 'left', marginLeft: '20px', marginBottom: '20px' }}>
+                            {/*Displays receipt values extracted on the URM for the user to review*/}
                             {Object.entries(editedData).map(([key, value]) => (
-                                key !== 'ExpenseCategory' && ( // Exclude ExpenseCategory
-                                    <div key={key}>
-                                        <label><strong>{key}:</strong></label>
+                                key !== 'ExpenseCategory' && ( // Exclude ExpenseCategory since it has its own dropdown
+                                    <div key={key} style={{ marginBottom: '10px', display: 'flex', alignItems: 'center' }}>
+                                        <label style={{ fontWeight: 'bold', minWidth: '150px' }}>{key === "ImageURL" ? "Image URL" : key.replace(/([A-Z])/g, ' $1').trim()}:</label> {/* fix for 'Image URL being displayed as Image U R L */}
                                         {isEditing ? (
                                             <input
                                                 type="text"
                                                 name={key}
-                                                value={value}
+                                                value={value || "Not detected"} //Handles missing values
                                                 onChange={handleEditChange}
-                                                style={{ marginLeft: '10px' }}
+                                                style={{ padding: '5px', width: '200px' }}
                                             />
                                         ) : (
-                                            <span style={{ marginLeft: '10px' }}> {value}</span>
+                                            <span style={{ marginLeft: '10px' }}>
+                                                {value && value.trim() ? value : <i style={{ color: 'gray'}}>Not detected</i>}
+                                            </span>
                                         )}
                                     </div>
                                 )
                             ))}
-                        </div>
 
-                        {/* Dedicated Dropdown for ExpenseCategory */}
-                        <div style={{ marginTop: '10px', textAlign: 'left', marginLeft: '20px' }}>
-                            <label htmlFor="expenseCategory"><strong>ExpenseCategory:</strong></label>
-                            <select
-                                id="expenseCategory"
-                                value={expenseCategory}
-                                onChange={(e) => {
-                                    setExpenseCategory(e.target.value);
-                                    setEditedData((prev) => ({
-                                        ...prev,
-                                        ExpenseCategory: e.target.value,
-                                    }));
-                                }}
-                                style={{ marginLeft: '10px' }}
-                            >
-                                <option value="" disabled>Select Category</option>
-                                <option value="Restaurant">Restaurant</option>
-                                <option value="Entertainment">Entertainment</option>
-                                <option value="Gas">Gas</option>
-                                <option value="Utilities">Utilities</option>
-                                <option value="Grocery">Grocery</option>
-                                <option value="Other">Other</option>
-                                <option value="Housing">Housing</option>
-                                <option value="Clothing">Clothing</option>
-                                <option value="Travel">Travel</option>
-                                <option value="Insurance">Insurance</option>
-                                <option value="Healthcare/Medical">Healthcare/Medical</option>
-                                <option value="Education">Education</option>
-                                <option value="Subscriptions">Subscriptions</option>
-                                <option value="Transportation">Transportation</option>
-                                <option value="Gifts/Donations">Gifts/Donations</option>
-                                <option value="Childcare">Childcare</option>
-                                <option value="Personal Care">Personal Care</option>
-                                <option value="Pets">Pets</option>
-                            </select>
+                            {/* Expense Category Dropdown  */}
+                            <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center' }}>
+                                <label htmlFor="expenseCategory" style={{ fontWeight: 'bold', minWidth: '150px' }}>Expense Category:</label>
+                                <select
+                                    id="expenseCategory"
+                                    value={expenseCategory}
+                                    onChange={(e) => {
+                                        setExpenseCategory(e.target.value);
+                                        setEditedData((prev) => ({
+                                            ...prev,
+                                            ExpenseCategory: e.target.value,
+                                        }));
+                                    }}
+                                    style={{ padding: '5px', width: '200px' }}
+                                >   
+                                    <option value="" disabled>Select Category</option>
+                                    <option value="Restaurant">Restaurant</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Gas">Gas</option>
+                                    <option value="Utilities">Utilities</option>
+                                    <option value="Grocery">Grocery</option>
+                                    <option value="Other">Other</option>
+                                    <option value="Housing">Housing</option>
+                                    <option value="Clothing">Clothing</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Insurance">Insurance</option>
+                                    <option value="Healthcare/Medical">Healthcare/Medical</option>
+                                    <option value="Education">Education</option>
+                                    <option value="Subscriptions">Subscriptions</option>
+                                    <option value="Transportation">Transportation</option>
+                                    <option value="Gifts/Donations">Gifts/Donations</option>
+                                    <option value="Childcare">Childcare</option>
+                                    <option value="Personal Care">Personal Care</option>
+                                    <option value="Pets">Pets</option>
+                                </select>
+                            </div>
                         </div>
 
                         {!isEditing ? (
