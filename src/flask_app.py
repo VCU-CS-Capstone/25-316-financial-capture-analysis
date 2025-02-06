@@ -5,6 +5,7 @@ from flask_cors import CORS
 import boto3
 from decimal import Decimal
 from s3_storage import upload_receipt_to_s3
+from datetime import datetime, timezone
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -77,6 +78,8 @@ def confirm_receipt():
         total_amount = data.get('TotalAmount', '0').replace('$', '').strip()
         expense_type = data.get('ExpenseType', 'Other')  # Default to 'Other' if not provided
 
+        upload_date = datetime.now(timezone.utc).strftime("%m-%d-%Y")  # MM-DD-YYYY format
+        
         receipt_item = {
             'PK': f"vendor#{data.get('VendorName', 'unknown')}",
             'SK': f"receipt#{data.get('TransactionDate', 'unknown')}",
@@ -85,7 +88,8 @@ def confirm_receipt():
             'Date': data.get('TransactionDate'),
             'TotalAmount': Decimal(total_amount) if total_amount else None,
             'ExpenseType': expense_type,  # Add ExpenseType to the item
-            'ImageURL': data.get('ImageURL') # Store image URL in the db
+            'ImageURL': data.get('ImageURL'), # Store image URL in the db
+            'UploadDate': upload_date
         }
 
         # Remove None values from the item
@@ -96,7 +100,7 @@ def confirm_receipt():
         receipts_table.put_item(Item=receipt_item)
         print("Successfully added item to DynamoDB:", receipt_item)
 
-        return jsonify({"message": "Receipt saved successfully"}), 200
+        return jsonify({"message": "Receipt saved successfully", "Upload date": upload_date}), 200
 
     except Exception as e:
         print(f"Error occurred while saving to DynamoDB: {e}")
