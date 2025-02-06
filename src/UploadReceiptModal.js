@@ -9,6 +9,7 @@ function UploadReceiptModal({ isOpen, onClose }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editedData, setEditedData] = useState(null);
     const [expenseCategory, setExpenseCategory] = useState('');
+    const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
     //animation for image/receipt uploading message
     useEffect(() => {
@@ -178,6 +179,19 @@ function UploadReceiptModal({ isOpen, onClose }) {
                                 )
                             ))}
 
+                            {/* Image pop up window */}
+                            {editedData.ImageURL && (
+                                <div style={{ marginBottom: '10px' }}>
+                                    <label style={{ fontWeight: 'bold', minWidth: '150px' }}>Receipt Image: </label>
+                                    <button
+                                        className="view-image-button"
+                                        onClick={() => setIsImageModalOpen(true)}
+                                    >
+                                        View Image
+                                    </button>
+                                </div>
+                            )}
+
                             {/* Expense Category Dropdown  */}
                             <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center' }}>
                                 <label htmlFor="expenseCategory" style={{ fontWeight: 'bold', minWidth: '150px' }}>Expense Category:</label>
@@ -226,6 +240,16 @@ function UploadReceiptModal({ isOpen, onClose }) {
                         ) : (
                             <button onClick={() => setIsEditing(false)}>Done Editing</button>
                         )}
+                    </div>
+                    
+                )}
+                {/* Image Modal */}
+                {isImageModalOpen && (
+                    <div className="image-modal">
+                        <div className="image-modal-content">
+                            <button className="close-btn" onClick={() => setIsImageModalOpen(false)}>×</button>
+                            <img src={editedData.ImageURL} alt="Receipt" />
+                        </div>
                     </div>
                 )}
             </div>
