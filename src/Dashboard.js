@@ -312,7 +312,7 @@ const Dashboard = () => {
     return (
         <div>
             <h1 className='Headings'>Dashboard</h1>
-            <DateRangePicker showOneCalendar size="sm" format="yyyy/MM/dd" className='Subheading' placeholder="Select Date Range" onChange={handleDateChange}/>
+            <DateRangePicker showOneCalendar size="sm" format="mm/dd/yyyy" className='Subheading' placeholder="Select Date Range" onChange={handleDateChange}/>
             <div className='Subheading-category dropdown-menu'>
                 <Dropdown
                     options={[...new Set(data.map(item => item.ExpenseType).filter(Boolean))]}
