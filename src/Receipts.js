@@ -80,7 +80,7 @@ const Receipts = () => {
     return (
         <div>
             <h1 className='Headings'>Receipts</h1>
-            <DateRangePicker showOneCalendar size="sm" format="yyyy/MM/dd" className='Subheading' onChange={handleDateChange}/>
+            <DateRangePicker showOneCalendar size="sm" format="yyyy/MM/dd" className='Subheading' placeholder="Select Date Range" onChange={handleDateChange}/>
             <div className='Subheading-category dropdown-menu'>
                 <Dropdown
                     options={[...new Set(data.map(item => item.ExpenseType).filter(Boolean))]}
@@ -98,7 +98,8 @@ const Receipts = () => {
             <div className='BodyContainer BodyContainer-wide shadow roundBorder'>
                 <table >
                     <thead className='roundBorder'>
-                        <th>Date</th>
+                        <th>Transaction Date</th>
+                        {/* <th>Upload Date</th> */}
                         <th>Total Amount</th>
                         <th>Total Items</th>
                         <th>Merchant</th>

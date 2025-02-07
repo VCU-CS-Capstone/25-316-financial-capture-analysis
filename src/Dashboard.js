@@ -100,10 +100,9 @@ const Dashboard = () => {
 
     // Donut Chart
     useEffect(() => {
-        if (data && donutChartRef.current) {
-            // Filter data based on the date range, category, and validate the data
-            const filteredData = data.filter(item => {
-                // Only include items with valid values
+        if (donutChartRef.current) {
+            // Filter data based on search, date range, category, and validation
+            const filteredData = filteredReceipts.filter(item => {
                 if (
                     !item.ExpenseType ||
                     typeof item.TotalAmount !== 'number' ||
@@ -111,65 +110,59 @@ const Dashboard = () => {
                     !item.Date ||
                     !item.VendorName
                 ) {
-                    console.warn("Invalid item encountered:", item);
                     return false;
                 }
-
+    
                 // Validate the date range
                 if (dateRange && dateRange.length === 2) {
                     const [startDate, endDate] = dateRange;
                     const isValidStart = startDate instanceof Date && !isNaN(startDate);
                     const isValidEnd = endDate instanceof Date && !isNaN(endDate);
-
+    
                     if (isValidStart && isValidEnd) {
                         const itemDate = new Date(item.Date);
-                        if (isNaN(itemDate)) {
-                            console.warn("Invalid date in item:", item);
-                            return false;
-                        }
-                        if (itemDate < startDate || itemDate > endDate) {
+                        if (isNaN(itemDate) || itemDate < startDate || itemDate > endDate) {
                             return false;
                         }
                     }
                 }
-
+    
                 // Filter by selected category
                 if (selectedCategory && item.ExpenseType !== selectedCategory) {
                     return false;
                 }
-
                 return true;
             });
-
-            // Aggregate data for chart labels and data
-            const chartLabels = [...new Set(filteredData.map(item => item.ExpenseType))]; // Unique categories
-            const chartData = chartLabels.map(
-                label =>
-                    filteredData
-                        .filter(item => item.ExpenseType === label)
-                        .reduce((sum, item) => sum + item.TotalAmount, 0)
+    
+            // Aggregate data for chart
+            let chartLabels = [...new Set(filteredData.map(item => item.ExpenseType))];
+            let chartData = chartLabels.map(label =>
+                filteredData
+                    .filter(item => item.ExpenseType === label)
+                    .reduce((sum, item) => sum + item.TotalAmount, 0)
             );
-
-            // Debugging output
-            console.log("Filtered Data:", filteredData);
-            console.log("Chart Labels:", chartLabels);
-            console.log("Chart Data:", chartData);
-
-            // Ensure data is valid for charting
-            if (!chartLabels.length || !chartData.length) {
-                console.warn("No valid data for the chart.");
-                return;
+    
+            // If no matching data, show an empty chart
+            if (filteredData.length === 0) {
+                console.warn("No data matches the current filters.");
+                chartLabels = ["No Data"];
+                chartData = [1]; 
             }
-
+    
+            // Debug messages
+            // console.log("Filtered Data:", filteredData);
+            // console.log("Chart Labels:", chartLabels);
+            // console.log("Chart Data:", chartData);
+    
             // Get the chart context
             const ctx = donutChartRef.current.getContext('2d');
-
-            // Destroy existing chart instance to avoid duplication
+    
+            // Destroy existing chart instance if it exists
             if (donutChartRef.current.chartInstance) {
                 donutChartRef.current.chartInstance.destroy();
             }
-
-            // Initialize new chart with filtered and aggregated data
+    
+            // Create chart instance
             donutChartRef.current.chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -177,6 +170,11 @@ const Dashboard = () => {
                     datasets: [
                         {
                             data: chartData,
+                            // Select a random color if there's data
+                            // Use a grey color if there's none
+                            backgroundColor: filteredData.length > 0 
+                                ? ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9966FF']
+                                : ['#E0E0E0'],
                         }
                     ]
                 },
@@ -189,11 +187,11 @@ const Dashboard = () => {
                 }
             });
         }
-    }, [data, dateRange, selectedCategory]);
-
-
+    }, [filteredReceipts, dateRange, selectedCategory, searchTerm]);
+    
+    // Update state with the selected category
     const handleCategoryChange = (option) => {
-        setSelectedCategory(option.value); // Update state with the selected category
+        setSelectedCategory(option.value); 
     };
 
     // Initialize Line Chart
@@ -314,7 +312,7 @@ const Dashboard = () => {
     return (
         <div>
             <h1 className='Headings'>Dashboard</h1>
-            <DateRangePicker showOneCalendar size="sm" format="yyyy/MM/dd" className='Subheading' onChange={handleDateChange}/>
+            <DateRangePicker showOneCalendar size="sm" format="yyyy/MM/dd" className='Subheading' placeholder="Select Date Range" onChange={handleDateChange}/>
             <div className='Subheading-category dropdown-menu'>
                 <Dropdown
                     options={[...new Set(data.map(item => item.ExpenseType).filter(Boolean))]}
@@ -405,7 +403,7 @@ const Dashboard = () => {
                                 <td>
                                     Amount: $
                                     {
-                                        data.filter(item => {
+                                        filteredReceipts.filter(item => {
                                             // Validate item has required fields
                                             if (!item.TotalAmount || typeof item.TotalAmount !== 'number' || isNaN(item.TotalAmount)) {
                                                 console.warn("Invalid TotalAmount in item:", item);
