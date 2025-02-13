@@ -99,7 +99,7 @@ const Receipts = () => {
                 <table >
                     <thead className='roundBorder'>
                         <th>Transaction Date</th>
-                        {/* <th>Upload Date</th> */}
+                        <th>Upload Date</th>
                         <th>Total Amount</th>
                         <th>Total Items</th>
                         <th>Merchant</th>
@@ -147,6 +147,7 @@ const Receipts = () => {
                         .map((item, index) => (
                             <tr key={index}>
                                 <td>{item.Date}</td>
+                                <td>{item.UploadDate}</td>
                                 <td>{item.TotalAmount}</td>
                                 <td>{item.TotalItems}</td>
                                 <td>{item.VendorName}</td>
