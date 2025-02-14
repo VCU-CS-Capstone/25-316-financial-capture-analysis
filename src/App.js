@@ -32,7 +32,7 @@ function RecButton(){
 
   return (
     <div>
-      <button className='SideButtons' onClick={handleClick}>Receipts</button>
+      <button className='SideButtons' onClick={handleClick}>My Receipts</button>
     </div>
   );
 }

@@ -312,7 +312,7 @@ const Dashboard = () => {
     return (
         <div>
             <h1 className='Headings'>Dashboard</h1>
-            <DateRangePicker showOneCalendar size="sm" format="mm/dd/yyyy" className='Subheading' placeholder="Select Date Range" onChange={handleDateChange}/>
+            <DateRangePicker showOneCalendar size="sm" className='Subheading' placeholder="Select Date Range" onChange={handleDateChange}/>
             <div className='Subheading-category dropdown-menu'>
                 <Dropdown
                     options={[...new Set(data.map(item => item.ExpenseType).filter(Boolean))]}
@@ -376,7 +376,7 @@ const Dashboard = () => {
                             <tr key={index}>
                                 <td>{item.Date}</td>
                                 <td>{item.UploadDate}</td>
-                                <td>{item.TotalAmount}</td>
+                                <td>{(item.TotalAmount || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
                                 <td>{item.TotalItems}</td>
                                 <td>{item.VendorName}</td>
                                 <td>{item.ExpenseType}</td>
