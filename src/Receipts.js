@@ -4,6 +4,7 @@ import './App.css';
 import './DashboardChart/Dashboard.css';
 import 'rsuite/dist/rsuite.min.css';
 import Dropdown from 'react-dropdown';
+import ReceiptDetailsModal from './ReceiptDetailsModal';
 
 const Receipts = () => {
     const [data, setData] = useState([]);
@@ -11,9 +12,22 @@ const Receipts = () => {
     const [error, setError] = useState(null);
     const [dateRange, setDateRange] = useState([null, null]);
     const [selectedCategory, setSelectedCategory] = useState(null);
-
+    
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredReceipts, setFilteredReceipts] = useState([]);
+
+    const [selectedReceipt, setSelectedReceipt] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    const openModal = (receiptData) => {
+        setSelectedReceipt(receiptData);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setSelectedReceipt(null);
+        setIsModalOpen(false);
+    };
   
     const handleDateChange = (range) => {
         setDateRange(range);
@@ -101,11 +115,12 @@ const Receipts = () => {
                         <th>Transaction Date</th>
                         <th>Upload Date</th>
                         <th>Total Amount</th>
-                        <th>Total Items</th>
+                       {/* <th>Total Items</th> */}
                         <th>Merchant</th>
-                        <th>Address</th>
-                        <th>Image</th>
+                       {/* <th>Address</th> */}
+                       {/* <th>Image</th> */}
                         <th>Category</th>
+                        <th>Receipt Details</th>
                     </thead>
                     <tbody>
                     {data
@@ -149,10 +164,10 @@ const Receipts = () => {
                                 <td>{item.Date}</td>
                                 <td>{item.UploadDate}</td>
                                 <td>{(item.TotalAmount || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-                                <td>{item.TotalItems}</td>
+                               {/* <td>{item.TotalItems}</td> */}
                                 <td>{item.VendorName}</td>
-                                <td>{item.VendorAddress}</td>
-                                <td>
+                               {/* <td>{item.VendorAddress}</td> */}
+                              {/*  <td>
                                 {item.ImageURL ? (
                                     <a
                                     href={item.ImageURL}
@@ -164,12 +179,24 @@ const Receipts = () => {
                                 ) : (
                                     'No Image'
                                 )}
-                                </td>
+                                </td> */}
                                 <td>{item.ExpenseType}</td>
+                                <td>
+                                    <button onClick={() => openModal(item)} className="view-receipt-button">
+                                        View Receipt Details
+                                    </button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+
+                {isModalOpen && selectedReceipt && (
+                    <ReceiptDetailsModal
+                        receipt={selectedReceipt}
+                        onClose={closeModal}
+                    />
+                )}
             </div>
         </div>
     );
