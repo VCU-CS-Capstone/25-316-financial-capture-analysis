@@ -5,6 +5,7 @@ import './DashboardChart/Dashboard.css';
 import 'rsuite/dist/rsuite.min.css';
 import Dropdown from 'react-dropdown';
 import ReceiptDetailsModal from './ReceiptDetailsModal';
+import Table from "./SortableTable/Table";
 
 const Receipts = () => {
     const [data, setData] = useState([]);
@@ -110,86 +111,8 @@ const Receipts = () => {
                 className="Subheading-category search-bar"
             />
             <div className='BodyContainer BodyContainer-wide shadow roundBorder'>
-                <table >
-                    <thead className='roundBorder'>
-                        <th>Transaction Date</th>
-                        <th>Upload Date</th>
-                        <th>Total Amount</th>
-                       {/* <th>Total Items</th> */}
-                        <th>Merchant</th>
-                       {/* <th>Address</th> */}
-                       {/* <th>Image</th> */}
-                        <th>Category</th>
-                        <th>Receipt Details</th>
-                    </thead>
-                    <tbody>
-                    {data
-                        .filter(item => {
-                            // Date filtering
-                            const isDateValid = (() => {
-                                if (dateRange && dateRange.length === 2) {
-                                    const [startDate, endDate] = dateRange;
-                                    const isValidStart = startDate instanceof Date && !isNaN(startDate);
-                                    const isValidEnd = endDate instanceof Date && !isNaN(endDate);
-                                    if (isValidStart && isValidEnd) {
-                                        const itemDate = new Date(item.Date);
-                                        return itemDate >= startDate && itemDate <= endDate;
-                                    }
-                                }
-                                return true; // No date range filtering
-                            })();
-
-                            // Category filtering
-                            const isCategoryValid = selectedCategory
-                                ? item.ExpenseType === selectedCategory
-                                : true; // No category filtering if none selected
-
-                            // Search term filtering
-                            const isSearchTermValid = (() => {
-                                if (!searchTerm.trim()) return true; // No search term filtering
-                                const lowercasedTerm = searchTerm.toLowerCase();
-                                return (
-                                    item.VendorName?.toLowerCase().includes(lowercasedTerm) ||
-                                    item.VendorAddress?.toLowerCase().includes(lowercasedTerm) ||
-                                    String(item.TotalAmount).toLowerCase().includes(lowercasedTerm) ||
-                                    item.ExpenseType?.toLowerCase().includes(lowercasedTerm)
-                                );
-                            })();
-
-                            return isDateValid && isCategoryValid && isSearchTermValid;
-                        })
-                        .sort((a, b) => new Date(b.Date) - new Date(a.Date)) // Sort by date
-                        .map((item, index) => (
-                            <tr key={index}>
-                                <td>{item.Date}</td>
-                                <td>{item.UploadDate}</td>
-                                <td>{(item.TotalAmount || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-                               {/* <td>{item.TotalItems}</td> */}
-                                <td>{item.VendorName}</td>
-                               {/* <td>{item.VendorAddress}</td> */}
-                              {/*  <td>
-                                {item.ImageURL ? (
-                                    <a
-                                    href={item.ImageURL}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    >
-                                    View Receipt
-                                    </a>
-                                ) : (
-                                    'No Image'
-                                )}
-                                </td> */}
-                                <td>{item.ExpenseType}</td>
-                                <td>
-                                    <button onClick={() => openModal(item)} className="view-receipt-button">
-                                        View Receipt Details
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                {/* NEW TABLE */}
+                <Table data={data} openModal={openModal}/>
 
                 {isModalOpen && selectedReceipt && (
                     <ReceiptDetailsModal
