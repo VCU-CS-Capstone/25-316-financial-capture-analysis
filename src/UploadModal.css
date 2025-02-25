@@ -1,3 +1,8 @@
+/*
+Since UploadReceiptModal.js and ReceiptDetailModal.js files share a few css resources, both css styligns are defined in this file
+*/
+
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -114,4 +119,93 @@
 
 .view-image-button:hover {
     background: #0056b3;
+}
+
+
+/* RECEIPT DETAILS SPECIFIC STUFF */ 
+
+.receipt-image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0px; 
+  }
+  
+.view-full-image-button {
+    display: block;
+    margin: 0 auto; /* Centers the button */
+    padding: 3px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .view-full-image-button:hover {
+    background-color: #0056b3;
+  }
+
+  .edit-delete-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Adds spacing between buttons */
+    margin-top: 10px;
+  }
+
+  .edit-delete-buttons button {
+    padding: 3px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.edit-delete-buttons button:hover {
+    background-color: #0056b3;
+}
+
+.button-group {
+    display: flex;
+    justify-content: center - 7px; 
+    gap: 15px; /* Adds spacing between buttons */
+    margin-top: 10px;
+}
+
+  .edit-save-button, .edit-cancel-button {
+    background-color: #007bff; 
+    color: white;
+    border: none;
+    padding: 1px 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+
+/* Hover effect for edit buttons */
+.button-group button:hover {
+    background-color: #0056b3;
+}
+
+.delete-button-group {
+    display: flex;  
+    justify-content: center; 
+    gap: 10px;  
+    margin-top: 15px; 
+}
+
+.delete-confirm-changes {
+    background-color: #007bff; 
+    color: white;
+    border: none;
+    padding: 1px 1px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.delete-confirm-changes:hover {
+    background-color: #0056b3;
 }
