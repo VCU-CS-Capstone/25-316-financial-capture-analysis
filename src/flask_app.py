@@ -106,5 +106,84 @@ def confirm_receipt():
         print(f"Error occurred while saving to DynamoDB: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/update-receipt', methods=['PUT'])
+def update_receipt():
+    try:
+        data = request.json
+        print("Received update request:", data)
+
+        pk = data.get('PK')  # Ensure this is in the format "vendor#Xfinity"
+        sk = data.get('SK')  # Ensure this is in the format "receipt#10/23/2024"
+
+        if not pk or not sk:
+            return jsonify({'error': 'Missing PK or SK'}), 400
+
+        update_expression = "SET TotalAmount = :ta, ExpenseType = :et, TransactionDate = :td, VendorName = :vn, VendorAddress = :va"
+        
+        expression_attribute_values = {
+            ":ta": Decimal(str(data["TotalAmount"])),
+            ":et": data["ExpenseType"],
+            ":td": data["TransactionDate"],
+            ":vn": data["VendorName"],
+            ":va": data["VendorAddress"]
+        }
+
+        response = receipts_table.update_item(
+            Key={'PK': pk, 'SK': sk},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_attribute_values,
+            ReturnValues="UPDATED_NEW"
+        )
+
+        print("Successfully updated receipt in DynamoDB:", response)
+        return jsonify({"message": "Receipt updated successfully", "updated_fields": response.get("Attributes", {})}), 200
+
+    except Exception as e:
+        print(f"Error updating receipt: {e}")
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/get-receipts', methods=['GET'])
+def get_receipts():
+    try:
+        response = receipts_table.scan()
+        items = response.get('Items', [])
+
+        updated_items = []
+        for item in items:
+            new_item = item.copy()
+
+            if "TransactionDate" not in new_item and "Date" in new_item:
+                new_item["TransactionDate"] = new_item.pop("Date")  # Map "Date" to "TransactionDate"
+
+            updated_items.append(new_item)
+
+        print("Receipts fetched with TransactionDate:", updated_items)  # Debugging output
+
+        return jsonify(updated_items), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/delete-receipt', methods=['DELETE'])
+def delete_receipt():
+    try:
+        data = request.get_json()
+        pk = data.get('PK')
+        sk = data.get('SK')
+
+        if not pk or not sk:
+            return jsonify({'error': 'Missing PK or SK'}), 400
+        
+        response = receipts_table.delete_item(
+            Key={
+                'PK': pk,
+                'SK': sk
+            }
+        )
+        
+        return jsonify({'message': 'Receipt deleted successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(debug=True)
