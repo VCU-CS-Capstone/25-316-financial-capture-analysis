@@ -19,6 +19,34 @@ const Receipts = () => {
 
     const [selectedReceipt, setSelectedReceipt] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const formatCurrency = (value) => {
+        let num = parseFloat(value.toString().replace(/[^0-9.]/g, "")) || 0; // Remove non-numeric characters
+        return `${num.toFixed(2)}`; // Ensure two decimal places
+    };
+
+    const fetchReceipts = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('http://localhost:5000/get-receipts'); 
+            if (!response.ok) throw new Error('Failed to fetch receipts');
+
+            let receipts = await response.json();
+
+            // Apply currency formatting
+            receipts = receipts.map(receipt => ({
+                ...receipt,
+                TotalAmount: formatCurrency(receipt.TotalAmount) // Ensure formatting is maintained
+            }));
+
+            setData(receipts);
+            setFilteredReceipts(receipts);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
     
     const openModal = (receiptData) => {
         setSelectedReceipt(receiptData);
@@ -28,6 +56,7 @@ const Receipts = () => {
     const closeModal = () => {
         setSelectedReceipt(null);
         setIsModalOpen(false);
+        fetchReceipts();
     };
   
     const handleDateChange = (range) => {
@@ -92,7 +121,7 @@ const Receipts = () => {
     if (loading) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Loading...</p>;
     if (error) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Error: {error}</p>;
 
-    return (
+return (
         <div>
             <h1 className='Headings'>Receipts</h1>
             <DateRangePicker showOneCalendar size="sm" className='Subheading' placeholder="Select Date Range" onChange={handleDateChange}/>
@@ -118,6 +147,7 @@ const Receipts = () => {
                     <ReceiptDetailsModal
                         receipt={selectedReceipt}
                         onClose={closeModal}
+                        refreshReceipts={fetchReceipts}
                     />
                 )}
             </div>
