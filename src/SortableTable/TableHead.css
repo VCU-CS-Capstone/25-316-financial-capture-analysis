@@ -22,16 +22,16 @@ padding: 8px 8px;
 } */
 
 .table th {
-    /* background: #fff; #82b0ff*/
-    padding: 8px 10px;
-    border-bottom: 1px solid #1a1a1a;
-    font-weight: bold;
-    text-align: left;
-    background-color: #82b0ff;
-    border-bottom: 2px solid #000000;
-    border-right: 1px solid #000000;
-    border-left: 1px solid #000000;
-  }
+  padding: 8px 10px;
+  border-bottom: 1px solid #1a1a1a;
+  font-weight: bold;
+  text-align: left;
+  background-color: #82b0ff;
+  border-bottom: 2px solid #000000;
+  border-right: 1px solid #000000;
+  border-left: 1px solid #000000;
+  transition: 0.25s;
+}
 
 th.up,
 th.default,
@@ -41,12 +41,23 @@ th.down {
   background-position: center right;
 }
 
+/* background: grey;
+color: white;
+transition: 0.1s; */
 .table th.up {
-    background-image: url("./images/up_arrow.png");
+  background-color: gainsboro;
+  background-image: url("./images/up_arrow.png");
 }
 .table th.down {
-    background-image: url("./images/down_arrow.png");
+  background-color: gainsboro;
+  background-image: url("./images/down_arrow.png");
 }
 .table th.default {
-    background-image: url("./images/default.png");
+  background-image: url("./images/default.png");
+}
+
+.table th:not([data-accessor="Actions"]):hover {
+  background-color: white;
+  color: grey;
+  transition: 0.25s;
 }

@@ -68,8 +68,8 @@
 
 
 .BodyContainer-third {
-  display: flex; /* Enable Flexbox */
-  justify-content: center; /* Center horizontally */
+  display: flex;
+  justify-content: center;
   align-items: center;
   position: absolute;
   width: 770px;
@@ -80,9 +80,8 @@
 }
 
 .BodyContainer-third .donutChart {
-  /* max-width: 50%; */
   max-height: 300px;
-  height: max-content;           /* Maintain aspect ratio */
+  height: max-content;
 }
 
 .BodyContainer-fourth {
@@ -111,38 +110,6 @@
   gap: 20px;
 }
 
-
-table {
-  width: 100%;
-  display: table;
-  border-collapse: collapse;
-}
-
-tr {
-  border-bottom: 1px solid #ccc;
-}
-
-tr:nth-child(even) {
-  background-color: #f2f2f2;
-}
-tr:nth-child(odd) {
-  background-color: #ffffff;
-}
-
-td, th {
-  text-align: left;
-  vertical-align: top;
-  padding: 8px 8px;
-}
-
-th {
-  /* text-align: center; */
-  background-color: #82b0ff;
-  border-bottom: 2px solid #000000;
-  /* border-left: 1px solid #000000;
-  border-right: 1px solid #000000; */
-}
-
 .dropdown-menu {
   width: 200px;
 }
@@ -151,4 +118,21 @@ th {
   left: 805px;
   height: 38px;
   width: 350px;
+}
+
+.filter-button {
+  background: #82b0ff;
+  color: black;
+  font-weight: bold;
+  font-size: 18px;
+  left: 1650px;
+  height: 38px;
+  width: 150px;
+	transition: 0.1s;
+}
+
+.filter-button:Hover {
+  background: grey;
+  color: white;
+	transition: 0.1s;
 }

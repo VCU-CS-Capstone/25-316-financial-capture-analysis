@@ -27,7 +27,7 @@ const TableHead = ({ columns, handleSorting }) => {
                     : "";
 
                     return (
-                        <th className={cl} key={accessor} onClick={sortable ? () => handleSortingChange(accessor) : null} >
+                        <th className={cl} key={accessor} data-accessor={accessor} onClick={sortable ? () => handleSortingChange(accessor) : null} >
                             {label}
                         </th>
                     );
