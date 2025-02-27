@@ -136,3 +136,21 @@
   color: white;
 	transition: 0.1s;
 }
+
+/* rgb(255, 62, 62) */
+.clear-button {
+  background: gainsboro; 
+  color: black;
+  font-weight: bold;
+  font-size: 18px;
+  left: 1490px;
+  height: 38px;
+  width: 150px;
+	transition: 0.1s;
+}
+
+.clear-button:Hover {
+  background: rgb(255, 50, 50);
+  color: white;
+	transition: 0.1s;
+}
