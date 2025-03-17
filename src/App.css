@@ -1,0 +1,66 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.SideButtons{
+  background-color: #256386;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 28px;
+  width: 300px;
+  margin-bottom: 5px;
+}
+.RecButton{
+  background-color: #256386;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 28px;
+  width: 300px;
+  position: absolute;
+  bottom: 5px;
+}
+
+.SideButtons:Hover{
+  background-color: #184e6d;
+  color: WHITE;
+}
+
+.RecButton:Hover{
+  background-color: #184e6d;
+  color: WHITE;
+}
+
+.Headings{
+  position:absolute;
+  top: 70px;
+  left: 320px;
+}
+
+.Subheading{
+  position:absolute;
+  top: 130px;
+  left: 320px;
+}
+
+.Logo {
+  padding: 10px 20px;
+}
+
+.highlight-cell {
+  background-color: yellow;
+  transition: background-color 1s ease-in-out, opacity 3s ease-in-out;
+}
+
+.fade-out {
+  background-color: transparent !important;
+  opacity: 0;
+}
