@@ -5,7 +5,7 @@ import { useSortableTable } from "./useSortableTable";
 // NOTE: Table.js, TableBody.js, and TableHead.js was made following this tutorial
 // https://blog.logrocket.com/creating-react-sortable-table/#creating-table-markup-react
 
-const Table = ({ data, openModal }) => {
+const Table = ({ data, openModal, onEdit, lastUpdatedFields }) => {
     // const [data, setData] = useState([]);
     // const [loading, setLoading] = useState(true);
     // const [error, setError] = useState(null);
@@ -28,7 +28,13 @@ const Table = ({ data, openModal }) => {
         <>
             <table className="table">
                 <TableHead columns={columns} handleSorting={handleSorting} />
-                <TableBody columns={columns} tableData={sortedData} openModal={openModal} />
+                <TableBody 
+                    columns={columns} 
+                    tableData={sortedData} 
+                    onEdit={onEdit}
+                    lastUpdatedReceipt={lastUpdatedReceipt}  // Pass highlight 
+                    lastUpdatedFields={lastUpdatedFields}
+                />
             </table>
         </>
     );
