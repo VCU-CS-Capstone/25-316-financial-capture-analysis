@@ -17,6 +17,18 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
         ExpenseType: receipt.ExpenseType || '', 
     });
 
+    useEffect(() => {
+        setEditedData({
+            PK: receipt.PK,
+            SK: receipt.SK,
+            TotalAmount: receipt.TotalAmount || 0,
+            VendorName: receipt.VendorName || '',
+            VendorAddress: receipt.VendorAddress || '',
+            TransactionDate: receipt.TransactionDate || receipt.Date || '',
+            ExpenseType: receipt.ExpenseType || '', 
+        });
+    }, [receipt]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setEditedData((prev) => ({ ...prev, [name]: value }));
@@ -26,28 +38,55 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
         setIsEditing(true);
     };
 
-    const handleSaveChanges = async () => {
+    const handleSave = async () => {
+        console.log("Save button clicked");
+        console.log("Edited Data:", editedData);
         try {
+            console.log('Before setting isEditing:', isEditing);
             const response = await fetch('http://localhost:5000/update-receipt', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editedData)
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to update receipt');
+    
+            console.log("Response Status:", response.status);
+            console.log("Response Headers:", response.headers);
+            const responseBody = await response.json().catch(() => null);
+            console.log("Response Body:", responseBody);
+            
+            if (response.ok) {
+                setIsEditing(false);
+                console.log('After setting isEditing:', isEditing);
+                
+                // Validate PK and SK
+                if (!editedData.PK || !editedData.SK) {
+                    console.error("Missing PK or SK in request - Cannot fetch updated receipt");
+                    return;
+                }
+    
+                console.log("Fetching updated receipt with PK:", editedData.PK, "SK:", editedData.SK);
+    
+                // Fetch updated data immediately from backend
+                const updatedReceiptResponse = await fetch(`http://localhost:5000/get-receipt?PK=${encodeURIComponent(editedData.PK)}&SK=${encodeURIComponent(editedData.SK)}`);
+                const updatedReceipt = await updatedReceiptResponse.json();
+    
+                if (updatedReceipt.error) {
+                    console.error("Error fetching updated receipt:", updatedReceipt.error);
+                    return;
+                }
+    
+                console.log("Updated Receipt from AWS:", updatedReceipt);
+               // refreshReceipts(updatedReceipt); // Fetch updated data from AWS after saving
+                // **Ensure state updates correctly**
+                setEditedData(prev => ({ ...prev, ...updatedReceipt }));         
+            } else {
+                console.error('Failed to update receipt:', responseBody);
             }
-
-            console.log("Receipt updated successfully");
-            refreshReceipts();
-            setIsEditing(false);
-            window.location.reload(); // refresh the page to reflect updates 
         } catch (error) {
-            console.error("Error updating receipt:", error);
+            console.error('Error updating receipt:', error);
         }
     };
+    
 
     const handleDeleteReceipt = async () => {
         try {
@@ -69,11 +108,44 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
             console.error("Error deleting receipt:", error);
         }
     };
+
+    const handleClose = () => {
+        let changedFields = {}; // Track only the edited fields
+    
+        Object.keys(editedData).forEach((key) => {
+            let oldValue = receipt[key];
+            let newValue = editedData[key];
+    
+            // Ensure TotalAmount is always compared as a number
+            if (key === "TotalAmount") {
+                oldValue = parseFloat(oldValue);
+                newValue = parseFloat(newValue);
+            }
+    
+            // Normalize strings to avoid false positives
+            if (typeof oldValue === "string") oldValue = oldValue.trim();
+            if (typeof newValue === "string") newValue = newValue.trim();
+    
+            if (oldValue !== newValue) {
+                changedFields[key] = true; // Mark only if there's a true difference
+            }
+        });
+    
+        console.log("Changed fields: ", changedFields);
+        if (Object.keys(changedFields).length > 0) {
+            console.log("Changes detected before closing modal.");
+            refreshReceipts(editedData, changedFields); // Pass only actual changes
+        }
+    
+        onClose(); // Close the modal
+    };
+    
+    
     
     return (
         <div className="modal-overlay">
             <div className="modal-content">
-                <button className="close-button" onClick={onClose}>&times;</button>
+                <button className="close-button" onClick={handleClose}>&times;</button>
                 <h2>Receipt Details</h2>
                 <div className="receipt-details" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                     <div className="receipt-info" style={{ flex: 1, textAlign: 'left' }}>
@@ -117,10 +189,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                                 <div className="button-group">
                                     {isEditing ? (
                                         <>
-                                            <button className="edit-save-button" onClick={async () => {
-                                                await handleSaveChanges();
-                                                setIsEditing(false); 
-                                            }}>Save Changes</button>
+                                            <button className="edit-save-button" onClick={handleSave}>Save Changes</button>
                                             <button className="edit-cancel-button" onClick={() => setIsEditing(false)}>Cancel Changes</button>
                                         </>
                                     ) : (
@@ -133,12 +202,12 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                             </>
                         ) : (
                             <>
-                                <p><strong>Vendor:</strong> {receipt.VendorName || 'N/A'}</p>
-                                <p><strong>Address:</strong> {receipt.VendorAddress || 'N/A'}</p>
-                                <p><strong>Date of Transaction:</strong> {receipt.TransactionDate || 'N/A'}</p>
-                                <p><strong>Upload Date:</strong> {receipt.UploadDate}</p>
-                                <p><strong>Expense Type:</strong> {receipt.ExpenseType || 'N/A'}</p>
-                                <p><strong>Total Spent:</strong> ${receipt.TotalAmount}</p>                              
+                                <p><strong>Vendor:</strong> {editedData.VendorName || 'N/A'}</p>
+                                <p><strong>Address:</strong> {editedData.VendorAddress || 'N/A'}</p>
+                                <p><strong>Date of Transaction:</strong> {editedData.TransactionDate || 'N/A'}</p>
+                                <p><strong>Upload Date:</strong> {editedData.UploadDate}</p>
+                                <p><strong>Expense Type:</strong> {editedData.ExpenseType || 'N/A'}</p>
+                                <p><strong>Total Spent:</strong> ${editedData.TotalAmount}</p>                              
                             </>
                         )}
                     </div>
