@@ -61,3 +61,12 @@ transition: 0.1s; */
   color: grey;
   transition: 0.25s;
 }
+
+.highlight-row {
+  background-color: yellow !important;
+  transition: background-color 2.5s ease-in-out;
+}
+
+.highlight-row.fade-out {
+  background-color: transparent;
+}
