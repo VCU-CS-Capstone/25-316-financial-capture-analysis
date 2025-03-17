@@ -16,9 +16,10 @@ const Receipts = () => {
     const [dropDownCategories, setDropDownCategories] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredReceipts, setFilteredReceipts] = useState();
-
     const [selectedReceipt, setSelectedReceipt] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [lastUpdatedReceipt, setLastUpdatedReceipt] = useState(null);
+    const [lastUpdatedFields, setLastUpdatedFields] = useState(null);
 
     // Function for retrieving data from the DynamoDB table
     const fetchData = async () => {
@@ -75,7 +76,40 @@ const Receipts = () => {
         setSelectedCategory(null);
         setSearchTerm(""); 
     };
+
+    const refreshReceipts = async (updatedReceipt, changedFields) => {
+        if (!updatedReceipt || !updatedReceipt.PK || !updatedReceipt.SK) {
+            console.warn("refreshReceipts called without an updated receipt");
+            return;
+        }
     
+        const updatedKey = updatedReceipt.PK + updatedReceipt.SK;
+    
+        // Filter out only the fields that actually changed
+        const filteredChangedFields = Object.keys(changedFields).reduce((acc, key) => {
+            if (changedFields[key]) acc[key] = true; // Only keep fields explicitly marked as changed
+            return acc;
+        }, {});
+    
+        console.log("Highlighting updated fields:", filteredChangedFields);
+
+        // If no fields were actually changed, do nothing
+        if (Object.keys(filteredChangedFields).length === 0) {
+            console.log("No valid changes detected. Skipping highlight.");
+            return;
+        }
+    
+        // Ensure only modified fields are tracked
+        setLastUpdatedFields({ key: updatedKey, fields: filteredChangedFields });
+    
+        // Delay fetching new data so the highlight is applied first
+        setTimeout(async () => {
+            console.log("Removing highlight for:", updatedKey);
+            setLastUpdatedFields(null); // Only clear after new data loads
+        }, 3000);
+    };
+    
+
     // This useEffect is only activated when all filter options are cleared, which can only happen with `clearFilters()` above
     useEffect(() => {
         if (dateRange[0] === null && selectedCategory === null && searchTerm === "") {
@@ -110,6 +144,11 @@ const Receipts = () => {
     const handleCategoryChange = (option) => {
         setSelectedCategory(option.value); // Update state with the selected category
     };
+
+    const handleEdit = (receipt) => {
+        setSelectedReceipt(receipt);
+        setIsModalOpen(true);
+    };
   
     // if (loading) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Loading...</p>;
     // if (error) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Error: {error}</p>;
@@ -142,12 +181,19 @@ const Receipts = () => {
                 <p className='BodyContainer BodyContainer-first shadow roundBorder'>Error: {error}</p>
             ) : (
                 <div className='BodyContainer BodyContainer-wide shadow roundBorder'>
-                    <Table data={filteredReceipts} openModal={openModal} />
+                    <Table 
+                        data={filteredReceipts} 
+                        onEdit={handleEdit} 
+                        lastUpdatedReceipt={lastUpdatedReceipt}
+                        lastUpdatedFields={lastUpdatedFields}
+                    />
+
     
                     {isModalOpen && selectedReceipt && (
                         <ReceiptDetailsModal
                             receipt={selectedReceipt}
                             onClose={closeModal}
+                            refreshReceipts={refreshReceipts}
                         />
                     )}
                 </div>
