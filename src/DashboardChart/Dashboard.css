@@ -1,0 +1,156 @@
+
+.SideButtons{
+  background-color: #106666;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 28px;
+  width: 300px;
+  margin-bottom: 5px;
+}
+.RecButton{
+  background-color: #106666;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 28px;
+  width: 300px;
+  margin-top: 590px;
+}
+
+.SideButtons:Hover{
+  background-color: #0a4242;
+  color: WHITE;
+}
+
+.Headings{
+  position:absolute;
+  top: 70px;
+  left: 320px;
+}
+
+.Subheading{
+  position:absolute;
+  top: 130px;
+  left: 320px;
+}
+
+.Subheading-category{
+  position:absolute;
+  top: 130px;
+  left: 600px;
+}
+
+.BodyContainer{
+  position: absolute;
+  left: 320px;
+  background-color: rgb(255, 254, 254);
+  padding: 15px 15px;
+  margin: auto;
+  width: 770px;
+  height: auto;
+  min-height: 380px;
+}
+
+.BodyContainer-first {
+  top: 180px;
+}
+
+.BodyContainer-second {
+  top: 609px;
+}
+
+
+.BodyContainer-third {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: 770px;
+  height: 380px;
+  background-color: white;
+  top: 180px;
+  left: 1120px;
+}
+
+.BodyContainer-third .donutChart {
+  max-height: 300px;
+  height: max-content;
+}
+
+.BodyContainer-fourth {
+  top: 610px;
+  left: 1120px;
+}
+
+.BodyContainer-wide {
+  top: 180px;
+  width: 1500px;
+}
+
+
+.shadow{
+	box-shadow: 0 5px 15px 0 grey;
+}
+
+.roundBorder{
+  border-radius: 15px;
+}
+
+.flexContainer{
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  gap: 20px;
+}
+
+.dropdown-menu {
+  width: 200px;
+}
+
+.search-bar{
+  left: 805px;
+  height: 38px;
+  width: 350px;
+}
+
+.filter-button {
+  background: #82b0ff;
+  color: black;
+  font-weight: bold;
+  font-size: 18px;
+  left: 1650px;
+  height: 38px;
+  width: 150px;
+	transition: 0.1s;
+}
+
+.filter-button:Hover {
+  background: grey;
+  color: white;
+	transition: 0.1s;
+}
+
+/* rgb(255, 62, 62) */
+.clear-button {
+  background: gainsboro; 
+  color: black;
+  font-weight: bold;
+  font-size: 18px;
+  left: 1490px;
+  height: 38px;
+  width: 150px;
+	transition: 0.1s;
+}
+
+.clear-button:Hover {
+  background: rgb(255, 50, 50);
+  color: white;
+	transition: 0.1s;
+}
