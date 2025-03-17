@@ -134,6 +134,7 @@ def update_receipt():
             ExpressionAttributeValues=expression_attribute_values,
             ReturnValues="UPDATED_NEW"
         )
+        print("Updating in DynamoDB with:", expression_attribute_values) # debug statement
 
         print("Successfully updated receipt in DynamoDB:", response)
         return jsonify({"message": "Receipt updated successfully", "updated_fields": response.get("Attributes", {})}), 200
@@ -142,26 +143,36 @@ def update_receipt():
         print(f"Error updating receipt: {e}")
         return jsonify({'error': str(e)}), 500
     
-@app.route('/get-receipts', methods=['GET'])
-def get_receipts():
+@app.route('/get-receipt', methods=['GET'])
+def get_receipt():
     try:
-        response = receipts_table.scan()
-        items = response.get('Items', [])
+        pk = request.args.get('PK')
+        sk = request.args.get('SK')
 
-        updated_items = []
-        for item in items:
-            new_item = item.copy()
+        print(f"Received get-receipt request: PK={pk}, SK={sk}")  # Debugging log
 
-            if "TransactionDate" not in new_item and "Date" in new_item:
-                new_item["TransactionDate"] = new_item.pop("Date")  # Map "Date" to "TransactionDate"
+        if not pk or not sk:
+            return jsonify({'error': 'Missing PK or SK'}), 400
 
-            updated_items.append(new_item)
+        # Force a fresh read from DynamoDB
+        response = receipts_table.get_item(Key={'PK': pk, 'SK': sk}, ConsistentRead=True)
 
-        print("Receipts fetched with TransactionDate:", updated_items)  # Debugging output
+        if 'Item' not in response:
+            return jsonify({'error': 'Receipt not found'}), 404
 
-        return jsonify(updated_items), 200
+        receipt = response['Item']
+
+        # Ensure consistency with frontend expectations
+        if "TransactionDate" not in receipt and "Date" in receipt:
+            receipt["TransactionDate"] = receipt.pop("Date")
+
+        print("Fetched updated receipt:", receipt)
+        return jsonify(receipt), 200
+
     except Exception as e:
+        print(f"Error fetching receipt: {e}")
         return jsonify({'error': str(e)}), 500
+
 
 @app.route('/delete-receipt', methods=['DELETE'])
 def delete_receipt():
