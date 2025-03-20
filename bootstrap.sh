@@ -7,6 +7,9 @@ exec 2>&1
 
 echo "Starting Bootstrap Setup"
 
+export AWS_REGION="us-east-1"
+export AWS_DEFAULT_REGION="us-east-1"
+
 # Update System packages
 echo "Updating system"
 sudo yum update -y
