@@ -10,7 +10,7 @@ function UploadReceiptModal({ isOpen, onClose }) {
     const [editedData, setEditedData] = useState(null);
     const [expenseCategory, setExpenseCategory] = useState('');
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-
+    const [isZoomed, setIsZoomed] = useState(false);
     //animation for image/receipt uploading message
     useEffect(() => {
         if (uploadStatus === 'Uploading') {
@@ -75,11 +75,19 @@ function UploadReceiptModal({ isOpen, onClose }) {
 
     const handleEditChange = (event) => {
         const { name, value } = event.target;
+        
+        if (name === "transactionDate") {
+            // Validate that the input is a valid date
+            const isValidDate = !isNaN(new Date(value).getTime());
+            if (!isValidDate) return; // Ignore invalid entries
+        }
+        
         setEditedData(prev => ({
             ...prev,
-            [name]: value,
+            [name]: value.trim() === "" ? "Not detected" : value, // Restore 'Not detected' if empty
         }));
     };
+    
 
     const handleCategoryConfirm = (category) => {
         setExpenseCategory(category);
@@ -129,6 +137,12 @@ function UploadReceiptModal({ isOpen, onClose }) {
         }
     };
 
+    const toggleZoom = () => { setIsZoomed((prevZoom) => !prevZoom);}; //used for zooming in on images.  note this currently isn't working
+    /*
+    gotta make this work somehow, the inputs of the function should take in ImageURL but the imagemodal takes in editedData.ImageURL
+    editedData.ImageURL won't work, it just needs to take in a independent variable or something idk I'll figure it out
+    */
+
     return (
         <div className="modal-overlay">
             <div className="modal-content">
@@ -159,22 +173,35 @@ function UploadReceiptModal({ isOpen, onClose }) {
                         <div style={{ textAlign: 'left', marginLeft: '20px', marginBottom: '20px' }}>
                             {/*Displays receipt values extracted on the URM for the user to review*/}
                             {Object.entries(editedData).map(([key, value]) => (
-                                key !== 'ExpenseCategory' && ( // Exclude ExpenseCategory since it has its own dropdown
+                                key !== 'ExpenseCategory' && key !== 'ImageURL' && ( // Exclude ExpenseCategory since it has its own dropdown, and image URL cause that is irrelevant to the user
                                     <div key={key} style={{ marginBottom: '10px', display: 'flex', alignItems: 'center' }}>
-                                        <label style={{ fontWeight: 'bold', minWidth: '150px' }}>{key === "ImageURL" ? "Image URL" : key.replace(/([A-Z])/g, ' $1').trim()}:</label> {/* fix for 'Image URL being displayed as Image U R L */}
+                                        <label style={{ fontWeight: 'bold', minWidth: '150px' }}>{key === "ImageURL" ? "Image URL" : key.replace(/([A-Z])/g, ' $1').trim()}:</label> {/* fix for 'Image URL being displayed as Image U R L, probably safe to delete but idk */}
                                         {isEditing ? (
-                                            <input
-                                                type="text"
-                                                name={key}
-                                                value={value || "Not detected"} //Handles missing values
-                                                onChange={handleEditChange}
-                                                style={{ padding: '5px', width: '200px' }}
-                                            />
-                                        ) : (
-                                            <span style={{ marginLeft: '10px' }}>
-                                                {value && value.trim() ? value : <i style={{ color: 'gray'}}>Not detected</i>}
-                                            </span>
-                                        )}
+                                            key === "transactionDate" ? (
+                                                <input
+                                                    type="date"
+                                                    name={key}
+                                                    value={value || ""}
+                                                    max={new Date().toISOString().split("T")[0]} // Prevents future dates
+                                                    onChange={handleEditChange}
+                                                    style={{ padding: '5px', width: '200px' }}
+                                                    />
+                                                ) : (
+                                                    // Regular text input for all other fields
+                                                    <input
+                                                        type="text"
+                                                        name={key}
+                                                        value={value === "Not detected" ? "" : value} // Handles missing values
+                                                        placeholder="Not detected"
+                                                        onChange={handleEditChange}
+                                                        style={{ padding: '5px', width: '200px' }}
+                                                    />
+                                                )
+                                            ) : (
+                                                <span style={{ marginLeft: '10px' }}>
+                                                    {value && value.trim() ? value : <i style={{ color: 'gray' }}>Not detected</i>}
+                                                </span>
+                                            )}
                                     </div>
                                 )
                             ))}
@@ -186,8 +213,9 @@ function UploadReceiptModal({ isOpen, onClose }) {
                                     <button
                                         className="view-image-button"
                                         onClick={() => setIsImageModalOpen(true)}
+                                        style={{ marginLeft: '50px' }}
                                     >
-                                        View Image
+                                     View Image
                                     </button>
                                 </div>
                             )}
@@ -226,19 +254,21 @@ function UploadReceiptModal({ isOpen, onClose }) {
                                     <option value="Childcare">Childcare</option>
                                     <option value="Personal Care">Personal Care</option>
                                     <option value="Pets">Pets</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Cleaning Supplies">Cleaning Supplies</option>
                                 </select>
                             </div>
                         </div>
 
                         {!isEditing ? (
                             <div className="ocr-buttons" style={{ marginTop: '10px' }}>
-                                <button onClick={() => setIsEditing(true)}>Edit</button>
-                                <button onClick={handleConfirm} disabled={!expenseCategory}>
+                                <button className="upload-button" onClick={() => setIsEditing(true)}>Edit</button>
+                                <button className="upload-button" onClick={handleConfirm} disabled={!expenseCategory} title={!expenseCategory ? "Please Select an expense category" : ""}>
                                     Confirm
                                 </button>
                             </div>
                         ) : (
-                            <button onClick={() => setIsEditing(false)}>Done Editing</button>
+                            <button className="upload-button" onClick={() => setIsEditing(false)}>Done Editing</button>
                         )}
                     </div>
                     
@@ -247,8 +277,12 @@ function UploadReceiptModal({ isOpen, onClose }) {
                 {isImageModalOpen && (
                     <div className="image-modal">
                         <div className="image-modal-content">
-                            <button className="close-btn" onClick={() => setIsImageModalOpen(false)}>×</button>
-                            <img src={editedData.ImageURL} alt="Receipt" />
+                            <button className="close-button" style={{ position: 'absolute', top: '-7px', right: '2px' }} onClick={() => setIsImageModalOpen(false)}>&times;</button>
+                            <img src={editedData.ImageURL} 
+                            alt="Receipt"
+                            className={`receipt-image ${isZoomed ? "zoomed" : ""}`}
+                            onClick={toggleZoom}
+                            />
                         </div>
                     </div>
                 )}
