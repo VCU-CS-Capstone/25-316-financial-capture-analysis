@@ -22,6 +22,8 @@ const ExpenseCategoryModal = ({ onConfirm }) => {
     "Childcare",
     "Personal Care",
     "Pets",
+    "Electronics",
+    "Cleaning Supplies",
   ];
 
   const handleConfirm = () => {
