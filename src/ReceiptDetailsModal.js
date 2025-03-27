@@ -43,7 +43,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
         console.log("Edited Data:", editedData);
         try {
             console.log('Before setting isEditing:', isEditing);
-            const response = await fetch('http://localhost:5000/update-receipt', {
+            const response = await fetch(`${config.API_URL}/update-receipt', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editedData)
@@ -67,7 +67,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                 console.log("Fetching updated receipt with PK:", editedData.PK, "SK:", editedData.SK);
     
                 // Fetch updated data immediately from backend
-                const updatedReceiptResponse = await fetch(`http://localhost:5000/get-receipt?PK=${encodeURIComponent(editedData.PK)}&SK=${encodeURIComponent(editedData.SK)}`);
+                const updatedReceiptResponse = await fetch(`${config.API_URL}get-receipt?PK=${encodeURIComponent(editedData.PK)}&SK=${encodeURIComponent(editedData.SK)}`);
                 const updatedReceipt = await updatedReceiptResponse.json();
     
                 if (updatedReceipt.error) {
@@ -90,7 +90,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
 
     const handleDeleteReceipt = async () => {
         try {
-            const response = await fetch('http://localhost:5000/delete-receipt', {
+            const response = await fetch(`${config.API_URL}/delete-receipt', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
