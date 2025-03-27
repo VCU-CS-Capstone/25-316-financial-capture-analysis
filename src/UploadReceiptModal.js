@@ -37,7 +37,7 @@ function UploadReceiptModal({ isOpen, onClose }) {
 
             try {
                 setUploadStatus('Uploading');
-                const response = await fetch('http://localhost:5000/upload-receipt', {
+                const response = await fetch(`${config.API_URL}/upload-receipt`, {
                     method: 'POST',
                     body: formData,
                 });
@@ -111,7 +111,7 @@ function UploadReceiptModal({ isOpen, onClose }) {
         console.log("Data being sent to database:", payload);
 
         try {
-            const response = await fetch('http://localhost:5000/confirm-receipt', {
+            const response = await fetch(`${config.API_URL}/confirm-receipt`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
