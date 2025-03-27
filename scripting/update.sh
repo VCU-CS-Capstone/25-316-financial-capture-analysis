@@ -3,9 +3,9 @@ LOGFILE="/home/ec2-user/update.log"
 exec > >(tee -i "$LOGFILE")
 exec 2>&1
 
-REPO_DIR="/home/ec2-user/25-316-financial-capture-analysis"
+REPO_DIR="/home/ec2-user/25-316-financial-capture-analysis-master"
 REMOTE="origin"
-BRANCH="main"
+BRANCH="master"
 
 function full_update {
     echo "Performing full update..."
