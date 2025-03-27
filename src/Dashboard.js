@@ -337,7 +337,6 @@ const Dashboard = () => {
                 </div>
     
                 <div className='BodyContainer BodyContainer-second shadow roundBorder'>
-                    <b>Top 15 Expenses this Year</b>
                 <div>
                     <table>
                     <thead className='roundBorder'>

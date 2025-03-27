@@ -129,12 +129,13 @@ const Receipts = () => {
     };
   
     const handleDateChange = (range) => {
-        setDateRange(range);
-    
-        if (range && range.length === 2) {
-            const [startDate, endDate] = range;
+        if (!range || range.length !== 2) {
+            setDateRange([null, null]);
+        } else {
+            setDateRange(range);
         }
     };
+    
 
     // Get the data as soon as the page loads up
     useEffect(() => {
