@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './UploadModal.css'; 
+import config from './config';
 
 const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
     const [showFullImage, setShowFullImage] = useState(false);
@@ -43,7 +44,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
         console.log("Edited Data:", editedData);
         try {
             console.log('Before setting isEditing:', isEditing);
-            const response = await fetch(`${config.API_URL}/update-receipt', {
+            await fetch(`${config.API_URL}/update-receipt`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editedData)
@@ -67,7 +68,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                 console.log("Fetching updated receipt with PK:", editedData.PK, "SK:", editedData.SK);
     
                 // Fetch updated data immediately from backend
-                const updatedReceiptResponse = await fetch(`${config.API_URL}get-receipt?PK=${encodeURIComponent(editedData.PK)}&SK=${encodeURIComponent(editedData.SK)}`);
+                await fetch(`${config.API_URL}/get-receipt?PK=${encodeURIComponent(editedData.PK)}&SK=${encodeURIComponent(editedData.SK)}`)
                 const updatedReceipt = await updatedReceiptResponse.json();
     
                 if (updatedReceipt.error) {
@@ -90,7 +91,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
 
     const handleDeleteReceipt = async () => {
         try {
-            const response = await fetch(`${config.API_URL}/delete-receipt', {
+            await fetch(`${config.API_URL}/delete-receipt`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
