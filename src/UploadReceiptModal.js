@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './UploadModal.css';
+import config from './config'
 
 function UploadReceiptModal({ isOpen, onClose }) {
     const fileInputRef = useRef(null);
