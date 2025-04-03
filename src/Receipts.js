@@ -33,7 +33,7 @@ const Receipts = () => {
             const result = await response.json();
             setData(result);
     
-            const uniqueCategories = [...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
+            const uniqueCategories = ["None", ...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
             setDropDownCategories(uniqueCategories); // Store unique categories before applying search filters
     
             const applySearchFilters = filterReceipts(result, dateRange, selectedCategory, searchTerm);
@@ -60,9 +60,7 @@ const Receipts = () => {
                 return true; // If no valid date range, do not filter by date
             })();
     
-            const isCategoryValid = selectedCategory
-                ? item.ExpenseType === selectedCategory  // Apply category filter
-                : true;  // No filter applied if null
+            const isCategoryValid = selectedCategory === "None" || selectedCategory == null || item.ExpenseType === selectedCategory;
     
             const isSearchValid = searchTerm
                 ? item.VendorName?.toLowerCase().includes(searchTerm.toLowerCase()) // Apply search filter
@@ -156,12 +154,20 @@ const Receipts = () => {
     return (
         <div>
             <h1 className='Headings'>Receipts</h1>
-            <DateRangePicker showOneCalendar size="sm" className='Subheading' placeholder="Select Date Range" onChange={handleDateChange}/>
+            <DateRangePicker 
+                showOneCalendar 
+                size="sm" 
+                className='Subheading' 
+                placeholder="Select Date Range" 
+                onChange={handleDateChange}
+                value={dateRange}
+            />
             <div className='Subheading-category dropdown-menu'>
                 <Dropdown
                     options={dropDownCategories}
                     onChange={handleCategoryChange}
                     placeholder="Select a category"
+                    value={selectedCategory}
                 />
             </div>
             <button className='Subheading-category roundBorder clear-button' onClick={clearFilters}>Clear</button>

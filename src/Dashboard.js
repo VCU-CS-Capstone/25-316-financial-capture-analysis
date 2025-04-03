@@ -78,7 +78,7 @@ const Dashboard = () => {
             const result = await response.json();
             setData(result);
     
-            const uniqueCategories = [...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
+            const uniqueCategories = ["None", ...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
             setDropDownCategories(uniqueCategories); // Store unique categories before applying search filters
     
             const applySearchFilters = filterReceipts(result, dateRange, selectedCategory, searchTerm);
@@ -112,9 +112,7 @@ const Dashboard = () => {
                 return true; // If no valid date range, do not filter by date
             })();
     
-            const isCategoryValid = selectedCategory
-                ? item.ExpenseType === selectedCategory  // Apply category filter
-                : true;  // No filter applied if null
+            const isCategoryValid = selectedCategory === "None" || selectedCategory == null || item.ExpenseType === selectedCategory;
     
             const isSearchValid = searchTerm
                 ? item.VendorName?.toLowerCase().includes(searchTerm.toLowerCase()) // Apply search filter
@@ -168,7 +166,7 @@ const Dashboard = () => {
                 }
     
                 // Filter by selected category
-                if (selectedCategory && item.ExpenseType !== selectedCategory) {
+                if (selectedCategory && selectedCategory !== "None" && item.ExpenseType !== selectedCategory) {
                     return false;
                 }
                 return true;
@@ -205,8 +203,7 @@ const Dashboard = () => {
                     datasets: [
                         {
                             data: chartData,
-                            // Select a random color if there's data
-                            // Use a grey color if there's none
+                            // Select a random color if there's data; default to grey if there is none
                             backgroundColor: filteredData.length > 0 
                                 ? ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9966FF']
                                 : ['#E0E0E0'],
@@ -319,7 +316,7 @@ const Dashboard = () => {
                 },
             });
         }
-    }, [data, dateRange]);
+    }, [filteredReceipts]);
 
     // useEffect(() => {
     //     const searchBar = document.getElementById("search-bar");
@@ -346,12 +343,20 @@ const Dashboard = () => {
         <div>
             <h1 className='Headings'>Dashboard</h1>
 
-            <DateRangePicker showOneCalendar size="sm" className='Subheading' placeholder="Select Date Range" onChange={handleDateChange}/>
+            <DateRangePicker 
+                showOneCalendar 
+                size="sm" 
+                className='Subheading' 
+                placeholder="Select Date Range" 
+                onChange={handleDateChange}
+                value={dateRange}
+            />
             <div className='Subheading-category dropdown-menu'>
                 <Dropdown
                     options={dropDownCategories}
                     onChange={handleCategoryChange}
                     placeholder="Select a category"
+                    value={selectedCategory}
                 />
             </div>
             <button className='Subheading-category roundBorder clear-button' onClick={clearFilters}>Clear</button>
@@ -410,9 +415,9 @@ const Dashboard = () => {
                                         return true;
                                     })();
 
-                                    const isCategoryValid = selectedCategory
-                                        ? item.ExpenseType === selectedCategory     // Only display items with matching category
-                                        : true;                                     // No category filtering if none selected
+                                    const isCategoryValid = selectedCategory === "None" || 
+                                        selectedCategory == null || 
+                                        item.ExpenseType === selectedCategory;
 
                                     return isDateValid && isCategoryValid;
                                 })
@@ -477,10 +482,10 @@ const Dashboard = () => {
                                                     }
                                     
                                                     // Validate and filter based on selected category
-                                                    if (selectedCategory && item.ExpenseType !== selectedCategory) {
+                                                    if (selectedCategory && selectedCategory !== "None" && item.ExpenseType !== selectedCategory) {
                                                         return false;
                                                     }
-                                    
+
                                                     return true; // Include item if it passes all checks
                                                 })
                                                 .reduce((total, item) => total + item.TotalAmount, 0)
