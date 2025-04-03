@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './UploadModal.css'; 
+import config from './config';
 
 const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
     const [showFullImage, setShowFullImage] = useState(false);
@@ -43,42 +44,40 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
         console.log("Edited Data:", editedData);
         try {
             console.log('Before setting isEditing:', isEditing);
-            const response = await fetch('http://localhost:5000/update-receipt', {
+            const response = await fetch(`${config.API_URL}/update-receipt`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editedData)
             });
-    
+
             console.log("Response Status:", response.status);
             console.log("Response Headers:", response.headers);
             const responseBody = await response.json().catch(() => null);
             console.log("Response Body:", responseBody);
-            
+
             if (response.ok) {
                 setIsEditing(false);
                 console.log('After setting isEditing:', isEditing);
-                
-                // Validate PK and SK
+
                 if (!editedData.PK || !editedData.SK) {
                     console.error("Missing PK or SK in request - Cannot fetch updated receipt");
                     return;
                 }
-    
+
                 console.log("Fetching updated receipt with PK:", editedData.PK, "SK:", editedData.SK);
-    
-                // Fetch updated data immediately from backend
-                const updatedReceiptResponse = await fetch(`http://localhost:5000/get-receipt?PK=${encodeURIComponent(editedData.PK)}&SK=${encodeURIComponent(editedData.SK)}`);
+
+                const updatedReceiptResponse = await fetch(
+                    `${config.API_URL}/get-receipt?PK=${encodeURIComponent(editedData.PK)}&SK=${encodeURIComponent(editedData.SK)}`
+                );
                 const updatedReceipt = await updatedReceiptResponse.json();
-    
+
                 if (updatedReceipt.error) {
                     console.error("Error fetching updated receipt:", updatedReceipt.error);
                     return;
                 }
-    
+
                 console.log("Updated Receipt from AWS:", updatedReceipt);
-               // refreshReceipts(updatedReceipt); // Fetch updated data from AWS after saving
-                // **Ensure state updates correctly**
-                setEditedData(prev => ({ ...prev, ...updatedReceipt }));         
+                setEditedData(prev => ({ ...prev, ...updatedReceipt }));
             } else {
                 console.error('Failed to update receipt:', responseBody);
             }
@@ -86,11 +85,10 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
             console.error('Error updating receipt:', error);
         }
     };
-    
 
     const handleDeleteReceipt = async () => {
         try {
-            const response = await fetch('http://localhost:5000/delete-receipt', {
+            const response = await fetch(`${config.API_URL}/delete-receipt`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -104,7 +102,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
 
             console.log("Receipt deleted successfully");
             setShowDeleteSuccess(true);
-        }catch (error) {
+        } catch (error) {
             console.error("Error deleting receipt:", error);
         }
     };
@@ -116,32 +114,28 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
             let oldValue = receipt[key];
             let newValue = editedData[key];
     
-            // Ensure TotalAmount is always compared as a number
             if (key === "TotalAmount") {
                 oldValue = parseFloat(oldValue);
                 newValue = parseFloat(newValue);
             }
     
-            // Normalize strings to avoid false positives
             if (typeof oldValue === "string") oldValue = oldValue.trim();
             if (typeof newValue === "string") newValue = newValue.trim();
     
             if (oldValue !== newValue) {
-                changedFields[key] = true; // Mark only if there's a true difference
+                changedFields[key] = true;
             }
         });
     
         console.log("Changed fields: ", changedFields);
         if (Object.keys(changedFields).length > 0) {
             console.log("Changes detected before closing modal.");
-            refreshReceipts(editedData, changedFields); // Pass only actual changes
+            refreshReceipts(editedData, changedFields);
         }
     
-        onClose(); // Close the modal
+        onClose();
     };
-    
-    
-    
+
     return (
         <div className="modal-overlay">
             <div className="modal-content">
@@ -153,7 +147,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                             <>
                                 <label>Vendor: <input type="text" name="VendorName" value={editedData.VendorName} onChange={handleChange} /></label>
                                 <label>Address: <input type="text" name="VendorAddress" value={editedData.VendorAddress} onChange={handleChange} /></label>
-                                <label>Date of Transaction: <input type="text" name="TransactionDate" value={editedData.TransactionDate} onChange={handleChange} placeholder="MM/DD/YYYY"maxLength="10" /></label>
+                                <label>Date of Transaction: <input type="text" name="TransactionDate" value={editedData.TransactionDate} onChange={handleChange} placeholder="MM/DD/YYYY" maxLength="10" /></label>
                                 <label>Expense Type:
                                     <select
                                         id="ExpenseCategory"
@@ -187,17 +181,8 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                                 </label>
                                 <label>Total Amount: <input type="text" name="TotalAmount" value={editedData.TotalAmount} onChange={handleChange} /></label>
                                 <div className="button-group">
-                                    {isEditing ? (
-                                        <>
-                                            <button className="edit-save-button" onClick={handleSave}>Save Changes</button>
-                                            <button className="edit-cancel-button" onClick={() => setIsEditing(false)}>Cancel Changes</button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <button onClick={handleEditClick} className="edit-button">Edit Receipt Details</button>
-                                            <button onClick={() => setShowDeleteConfirmation(true)} className="delete-button">Delete Receipt</button>
-                                        </>
-                                    )}
+                                    <button className="edit-save-button" onClick={handleSave}>Save Changes</button>
+                                    <button className="edit-cancel-button" onClick={() => setIsEditing(false)}>Cancel Changes</button>
                                 </div>
                             </>
                         ) : (
@@ -207,7 +192,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                                 <p><strong>Date of Transaction:</strong> {editedData.TransactionDate || 'N/A'}</p>
                                 <p><strong>Upload Date:</strong> {editedData.UploadDate}</p>
                                 <p><strong>Expense Type:</strong> {editedData.ExpenseType || 'N/A'}</p>
-                                <p><strong>Total Spent:</strong> ${editedData.TotalAmount}</p>                              
+                                <p><strong>Total Spent:</strong> ${editedData.TotalAmount}</p>
                             </>
                         )}
                     </div>
@@ -241,22 +226,15 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                         </>
                     )}
                 </div>
-                
             </div>
-            
-            
 
-            {/* Full Image Modal */}
             {showFullImage && (
                 <div className="image-modal">
-                <div className="image-modal-content">
-                    <img 
-                        src={receipt.ImageURL} 
-                        alt="Full Receipt" 
-                    />
-                    <button className="close-button" onClick={() => setShowFullImage(false)}>×</button>
+                    <div className="image-modal-content">
+                        <img src={receipt.ImageURL} alt="Full Receipt" />
+                        <button className="close-button" onClick={() => setShowFullImage(false)}>×</button>
+                    </div>
                 </div>
-            </div>
             )}
             {showDeleteConfirmation && (
                 <div className="modal-overlay">
@@ -270,7 +248,6 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                     </div>
                 </div>
             )}
-            
             {showDeleteSuccess && (
                 <div className="modal-overlay">
                     <div className="modal-content">
@@ -280,8 +257,6 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                     </div>
                 </div>
             )}
-
-            
         </div>
     );
 };
