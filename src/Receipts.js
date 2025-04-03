@@ -172,6 +172,9 @@ const Receipts = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="Subheading-category search-bar"
+                onKeyDown={(e) => {
+                    if(e.key === 'Enter') { fetchData(); } 
+                }}
             />
     
             {/* Conditional Rendering for Loading/Error */}

@@ -189,11 +189,6 @@ const Dashboard = () => {
                 chartData = [1]; 
             }
     
-            // Debug messages
-            // console.log("Filtered Data:", filteredData);
-            // console.log("Chart Labels:", chartLabels);
-            // console.log("Chart Data:", chartData);
-    
             // Get the chart context
             const ctx = donutChartRef.current.getContext('2d');
     
@@ -279,11 +274,6 @@ const Dashboard = () => {
             const labels = sortedData.map(item => new Date(item.Date).toLocaleDateString('en-US', { day: 'numeric' }));
             const amounts = sortedData.map(item => item.TotalAmount);
     
-            // Debugging logs
-            console.log("Filtered Data:", sortedData);
-            console.log("Labels:", labels);
-            console.log("Amounts:", amounts);
-    
             // Destroy existing chart instance to avoid duplication
             if (lineChartRef.current) {
                 lineChartRef.current.destroy();
@@ -331,6 +321,26 @@ const Dashboard = () => {
         }
     }, [data, dateRange]);
 
+    // useEffect(() => {
+    //     const searchBar = document.getElementById("search-bar");
+        
+    //     if (searchBar) {
+    //         const handleKeyDown = (event) => {
+    //             if (event.key === "Enter") {
+    //                 event.preventDefault();
+    //                 fetchData();
+    //             }
+    //         };
+    
+    //         searchBar.addEventListener("keydown", handleKeyDown);
+    
+    //         // Cleanup function to remove event listener when component unmounts
+    //         return () => {
+    //             searchBar.removeEventListener("keydown", handleKeyDown);
+    //         };
+    //     }
+    // }, []);
+
 
     return (
         <div>
@@ -352,6 +362,9 @@ const Dashboard = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="Subheading-category search-bar"
+                onKeyDown={(e) => {
+                    if(e.key === 'Enter') { fetchData(); } 
+                }}
             />
 
             {loading ? (
@@ -440,12 +453,12 @@ const Dashboard = () => {
                                                 filteredReceipts.filter(item => {
                                                     // Validate item has required fields
                                                     if (!item.TotalAmount || typeof item.TotalAmount !== 'number' || isNaN(item.TotalAmount)) {
-                                                        console.warn("Invalid TotalAmount in item:", item);
+                                                        // console.warn("Invalid TotalAmount in item:", item);
                                                         return false;
                                                     }
 
                                                     if (!item.Date || isNaN(new Date(item.Date))) {
-                                                        console.warn("Invalid Date in item:", item);
+                                                        // console.warn("Invalid Date in item:", item);
                                                         return false;
                                                     }
 
