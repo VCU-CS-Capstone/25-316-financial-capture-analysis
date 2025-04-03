@@ -151,9 +151,7 @@ const Receipts = () => {
         setSelectedReceipt(receipt);
         setIsModalOpen(true);
     };
-  
-    // if (loading) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Loading...</p>;
-    // if (error) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Error: {error}</p>;
+    
 
     return (
         <div>

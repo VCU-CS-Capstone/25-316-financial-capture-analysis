@@ -18,23 +18,25 @@ const Dashboard = () => {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredReceipts, setFilteredReceipts] = useState([]);
+    const [dropDownCategories, setDropDownCategories] = useState([]);
 
     const currentDate = new Date();
-    // const currentDay = currentDate.getDate();
     const currentYear = new Date().getFullYear();
     const currentMonthIndex = currentDate.getMonth();
-    // const currentMonthName = new Intl.DateTimeFormat('en-US', {month: 'long'}).format(currentDate); //Gets current month name
     const daysInMonth = new Date(new Date().getFullYear(), currentMonthIndex, 0).getDate();
+
     // Generates x-axis labels 1 to n days in the current month
     const xlabels = [];
     for (let i =1; i <=daysInMonth; i++){
         xlabels.push(i);
     }
+
     // Filters the data to only incude items from the current year
     const filterYearData = data.filter(item => {
         const itemsYear = new Date(item.Date).getFullYear();
         return itemsYear === currentYear;
     });
+
     // Filters the data to only include items from the current year and month
     const filterMonthData = data.filter(item => {
         const itemDate = new Date(item.Date);
@@ -42,61 +44,99 @@ const Dashboard = () => {
         const itemMonth = itemDate.getMonth();
         return itemYear === currentYear && itemMonth === currentMonthIndex;
     });
+    
     // Calculates the number of transactions per day in the current month
-    const calculateDailyTransactions = () => {
-        const transactionsPerDay = new Array(daysInMonth).fill(0);
+    // COMMENTED OUT BUT IT'S POSSIBLE THIS MAY BE USED IN THE FUTURE
+    // const calculateDailyTransactions = () => {
+    //     const transactionsPerDay = new Array(daysInMonth).fill(0);
 
-        filterMonthData.forEach(item => {
-            const itemDate = new Date(item.Date);
-            const dayOfMonth = itemDate.getDate();
-            if (dayOfMonth >= 1 && dayOfMonth <= daysInMonth){
-                transactionsPerDay[dayOfMonth-1]++;
-            }
-        });
-        return transactionsPerDay;
-    }
+    //     filterMonthData.forEach(item => {
+    //         const itemDate = new Date(item.Date);
+    //         const dayOfMonth = itemDate.getDate();
+    //         if (dayOfMonth >= 1 && dayOfMonth <= daysInMonth){
+    //             transactionsPerDay[dayOfMonth-1]++;
+    //         }
+    //     });
+    //     return transactionsPerDay;
+    // }
 
     const handleDateChange = (range) => {
-        setDateRange(range);
-    
-        if (range && range.length === 2) {
-            const [startDate, endDate] = range;
+        if (!range || range.length !== 2) {
+            setDateRange([null, null]);
+        } else {
+            setDateRange(range);
+        }
+    };
 
-            const isValidStart = startDate instanceof Date && !isNaN(startDate);
-            const isValidEnd = endDate instanceof Date && !isNaN(endDate);
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('https://fryt5r9woh.execute-api.us-east-1.amazonaws.com/items');
+            
+            if (!response.ok) { throw new Error(`HTTP error! Status: ${response.status}`); }
     
-            if (isValidStart && isValidEnd) {
-                console.log("Start Date:", startDate, "End Date:", endDate);
-            }
-            else {
-                console.log("Reset sorting back to default");
-            }
+            const result = await response.json();
+            setData(result);
+    
+            const uniqueCategories = [...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
+            setDropDownCategories(uniqueCategories); // Store unique categories before applying search filters
+    
+            const applySearchFilters = filterReceipts(result, dateRange, selectedCategory, searchTerm);
+            setFilteredReceipts(applySearchFilters);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
     // LOAD DYNAMODB TABLE DATA
+    // Get the data as soon as the page loads up
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch('https://fryt5r9woh.execute-api.us-east-1.amazonaws.com/items');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-  
-                const result = await response.json();
-                setData(result);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-  
         fetchData();
     }, []);
 
+    // Filter receipts function
+    const filterReceipts = (receipts, dateRange, selectedCategory, searchTerm) => {
+        return receipts.filter(item => {
+            const isDateValid = (() => {
+                if (dateRange && dateRange.length === 2 && dateRange[0] && dateRange[1]) {
+                    const [startDate, endDate] = dateRange.map(date => new Date(date));
+                    
+                    if (!isNaN(startDate) && !isNaN(endDate)) {
+                        const itemDate = new Date(item.Date);
+                        return itemDate >= startDate && itemDate <= endDate;
+                    }
+                }
+                return true; // If no valid date range, do not filter by date
+            })();
+    
+            const isCategoryValid = selectedCategory
+                ? item.ExpenseType === selectedCategory  // Apply category filter
+                : true;  // No filter applied if null
+    
+            const isSearchValid = searchTerm
+                ? item.VendorName?.toLowerCase().includes(searchTerm.toLowerCase()) // Apply search filter
+                : true;  // No filter applied if empty
+    
+            return isDateValid && isCategoryValid && isSearchValid;
+        });
+    };
+
+    // Clear filters function to reset options
+    const clearFilters = () => {
+        setDateRange([null, null]);
+        setSelectedCategory(null);
+        setSearchTerm(""); 
+    };
+
+    // This useEffect is only activated when all filter options are cleared, which can only happen with `clearFilters()` above
+    useEffect(() => {
+        if (dateRange[0] === null && selectedCategory === null && searchTerm === "") {
+            fetchData();
+        }
+    }, [dateRange, selectedCategory, searchTerm]);
 
     // Donut Chart
     useEffect(() => {
@@ -187,7 +227,8 @@ const Dashboard = () => {
                 }
             });
         }
-    }, [filteredReceipts, dateRange, selectedCategory, searchTerm]);
+    // }, [filteredReceipts, dateRange, selectedCategory, searchTerm]);
+    }, [filteredReceipts]);
     
     // Update state with the selected category
     const handleCategoryChange = (option) => {
@@ -206,7 +247,7 @@ const Dashboard = () => {
     
             if (startDate && endDate) {
                 // Filter data based on the provided date range
-                filteredData = data.filter(item => {
+                filteredData = filteredReceipts.filter(item => {
                     const itemDate = new Date(item.Date);
                     return (
                         itemDate instanceof Date &&
@@ -220,7 +261,7 @@ const Dashboard = () => {
                 const now = new Date(); // Current date and time
                 const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000)); // Date 30 days ago
             
-                filteredData = data.filter(item => {
+                filteredData = filteredReceipts.filter(item => {
                     const itemDate = new Date(item.Date); // Parse the item's date
                     return (
                         itemDate instanceof Date &&
@@ -289,37 +330,22 @@ const Dashboard = () => {
             });
         }
     }, [data, dateRange]);
-    
-    // Search bar
-    useEffect(() => {
-        if (searchTerm.trim() === "") {
-            setFilteredReceipts(data); // Show all receipts when search term is empty
-        } else {
-            const lowercasedTerm = searchTerm.toLowerCase();
-            const filtered = data.filter(receipt =>
-                Object.values(receipt).some(value =>
-                    String(value).toLowerCase().includes(lowercasedTerm)
-                )
-            );
-            setFilteredReceipts(filtered); // Show receipts with search name
-        }
-    }, [searchTerm, data]);
 
-
-    if (loading) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Loading...</p>;
-    if (error) return <p className='BodyContainer BodyContainer-first shadow roundBorder'>Error: {error}</p>;
 
     return (
         <div>
             <h1 className='Headings'>Dashboard</h1>
+
             <DateRangePicker showOneCalendar size="sm" className='Subheading' placeholder="Select Date Range" onChange={handleDateChange}/>
             <div className='Subheading-category dropdown-menu'>
                 <Dropdown
-                    options={[...new Set(data.map(item => item.ExpenseType).filter(Boolean))]}
+                    options={dropDownCategories}
                     onChange={handleCategoryChange}
                     placeholder="Select a category"
                 />
             </div>
+            <button className='Subheading-category roundBorder clear-button' onClick={clearFilters}>Clear</button>
+            <button className='Subheading-category roundBorder filter-button' onClick={fetchData}>Search</button>
             <input
                 type="text"
                 placeholder="Search receipts..."
@@ -328,125 +354,134 @@ const Dashboard = () => {
                 className="Subheading-category search-bar"
             />
 
-            <div className='flexContainer'>
-                <div className='BodyContainer BodyContainer-first shadow roundBorder'>
-                    Total of Monthly Expenses
-                    <div>
-                        <canvas id='expenseChart' ref={chartRef}></canvas>
+            {loading ? (
+                <p className='BodyContainer BodyContainer-first shadow roundBorder'>Loading...</p>
+            ) : error ? (
+                <p className='BodyContainer BodyContainer-first shadow roundBorder'>Error: {error}</p>
+            ) : (
+                <div className="dashboard-content">
+                    {/* Line Chart */}
+                    <div className='BodyContainer BodyContainer-first shadow roundBorder'>
+                        Total of Monthly Expenses
+                        <div>
+                            <canvas id='expenseChart' ref={chartRef}></canvas>
+                        </div>
                     </div>
-                </div>
-    
-                <div className='BodyContainer BodyContainer-second shadow roundBorder'>
-                <div>
-                    <table>
-                    <thead className='roundBorder'>
-                        <tr>
-                            <th>Transaction Date</th>
-                            <th>Upload Date</th>
-                            <th>Total Amount</th>
-                            <th>Total Items</th>
-                            <th>Merchant</th>
-                            <th>Category</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.filter(item => {
-                            const isDateValid = (() => {
-                                if (dateRange && dateRange.length === 2) {
-                                    const [startDate, endDate] = dateRange;
-                                    const isValidStart = startDate instanceof Date && !isNaN(startDate);
-                                    const isValidEnd = endDate instanceof Date && !isNaN(endDate);
-                                    if (isValidStart && isValidEnd) {
-                                        const itemDate = new Date(item.Date);
-                                        return itemDate >= startDate && itemDate <= endDate;
-                                    }
-                                }
-                                return true;
-                            })();
 
-                            const isCategoryValid = selectedCategory
-                                ? item.ExpenseType === selectedCategory     // Only display items with matching category
-                                : true;                                     // No category filtering if none selected
-
-                            return isDateValid && isCategoryValid;
-                        })
-                        .sort((a, b) => new Date(b.Date) - new Date(a.Date)) // Sort by date
-                        .map((item, index) => (
-                            <tr key={index}>
-                                <td>{item.Date}</td>
-                                <td>{item.UploadDate}</td>
-                                <td>{(item.TotalAmount || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-                                <td>{item.TotalItems}</td>
-                                <td>{item.VendorName}</td>
-                                <td>{item.ExpenseType}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                    </table>
-                </div>
-                </div>
-
-                <div>
-                    <div className='BodyContainer-third shadow roundBorder chart'>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Expense Category Breakdown</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <canvas className='donutChart' ref={donutChartRef}></canvas>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    Amount: $
-                                    {
-                                        filteredReceipts.filter(item => {
-                                            // Validate item has required fields
-                                            if (!item.TotalAmount || typeof item.TotalAmount !== 'number' || isNaN(item.TotalAmount)) {
-                                                console.warn("Invalid TotalAmount in item:", item);
-                                                return false;
+                    {/* Receipts widget */}
+                    <div className='BodyContainer BodyContainer-second shadow roundBorder'>
+                    <div>
+                        <table>
+                            <thead className='roundBorder'>
+                                <tr>
+                                    <th>Transaction Date</th>
+                                    <th>Upload Date</th>
+                                    <th>Total Amount</th>
+                                    <th>Total Items</th>
+                                    <th>Merchant</th>
+                                    <th>Category</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredReceipts.filter(item => {
+                                    const isDateValid = (() => {
+                                        if (dateRange && dateRange.length === 2) {
+                                            const [startDate, endDate] = dateRange;
+                                            const isValidStart = startDate instanceof Date && !isNaN(startDate);
+                                            const isValidEnd = endDate instanceof Date && !isNaN(endDate);
+                                            if (isValidStart && isValidEnd) {
+                                                const itemDate = new Date(item.Date);
+                                                return itemDate >= startDate && itemDate <= endDate;
                                             }
+                                        }
+                                        return true;
+                                    })();
 
-                                            if (!item.Date || isNaN(new Date(item.Date))) {
-                                                console.warn("Invalid Date in item:", item);
-                                                return false;
-                                            }
+                                    const isCategoryValid = selectedCategory
+                                        ? item.ExpenseType === selectedCategory     // Only display items with matching category
+                                        : true;                                     // No category filtering if none selected
 
-                                            // Validate and filter based on date range
-                                            if (dateRange && dateRange.length === 2) {
-                                                const [startDate, endDate] = dateRange;
-                                                const isValidStart = startDate instanceof Date && !isNaN(startDate);
-                                                const isValidEnd = endDate instanceof Date && !isNaN(endDate);
-
-                                                if (isValidStart && isValidEnd) {
-                                                    const itemDate = new Date(item.Date);
-                                                    if (itemDate < startDate || itemDate > endDate) {
+                                    return isDateValid && isCategoryValid;
+                                })
+                                .sort((a, b) => new Date(b.Date) - new Date(a.Date)) // Sort by date
+                                .map((item, index) => (
+                                    <tr key={index}>
+                                        <td>{item.Date}</td>
+                                        <td>{item.UploadDate}</td>
+                                        <td>{(item.TotalAmount || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
+                                        <td>{item.TotalItems}</td>
+                                        <td>{item.VendorName}</td>
+                                        <td>{item.ExpenseType}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {/* Donut Chart */}
+                    </div>
+                        <div>
+                        <div className='BodyContainer-third shadow roundBorder chart'>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Expense Category Breakdown</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <canvas className='donutChart' ref={donutChartRef}></canvas>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Amount: $
+                                            {
+                                                filteredReceipts.filter(item => {
+                                                    // Validate item has required fields
+                                                    if (!item.TotalAmount || typeof item.TotalAmount !== 'number' || isNaN(item.TotalAmount)) {
+                                                        console.warn("Invalid TotalAmount in item:", item);
                                                         return false;
                                                     }
-                                                }
+
+                                                    if (!item.Date || isNaN(new Date(item.Date))) {
+                                                        console.warn("Invalid Date in item:", item);
+                                                        return false;
+                                                    }
+
+                                                    // Validate and filter based on date range
+                                                    if (dateRange && dateRange.length === 2) {
+                                                        const [startDate, endDate] = dateRange;
+                                                        const isValidStart = startDate instanceof Date && !isNaN(startDate);
+                                                        const isValidEnd = endDate instanceof Date && !isNaN(endDate);
+
+                                                        if (isValidStart && isValidEnd) {
+                                                            const itemDate = new Date(item.Date);
+                                                            if (itemDate < startDate || itemDate > endDate) {
+                                                                return false;
+                                                            }
+                                                        }
+                                                    }
+                                    
+                                                    // Validate and filter based on selected category
+                                                    if (selectedCategory && item.ExpenseType !== selectedCategory) {
+                                                        return false;
+                                                    }
+                                    
+                                                    return true; // Include item if it passes all checks
+                                                })
+                                                .reduce((total, item) => total + item.TotalAmount, 0)
+                                                .toFixed(2)
                                             }
-                            
-                                            // Validate and filter based on selected category
-                                            if (selectedCategory && item.ExpenseType !== selectedCategory) {
-                                                return false;
-                                            }
-                            
-                                            return true; // Include item if it passes all checks
-                                        })
-                                        .reduce((total, item) => total + item.TotalAmount, 0)
-                                        .toFixed(2)
-                                    }
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                
                 </div>
-            </div>
+            )}
         </div>
     );
 };
