@@ -25,16 +25,17 @@ const Receipts = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await fetch('https://fryt5r9woh.execute-api.us-east-1.amazonaws.com/items');
+            const response = await fetch('https://fryt5r9woh.execute-api.us-east-1.amazonaws.com/items');  // Old response using AWS API
+            // const response = await fetch('http://localhost:5000/get-all-receipts'); // New response using flask_app.py
             
             if (!response.ok) { throw new Error(`HTTP error! Status: ${response.status}`); }
-
+    
             const result = await response.json();
             setData(result);
-
+    
             const uniqueCategories = [...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
             setDropDownCategories(uniqueCategories); // Store unique categories before applying search filters
-
+    
             const applySearchFilters = filterReceipts(result, dateRange, selectedCategory, searchTerm);
             setFilteredReceipts(applySearchFilters);
         } catch (error) {

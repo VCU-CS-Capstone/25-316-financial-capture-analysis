@@ -12,8 +12,9 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 # Initialize DynamoDB client
-dynamodb = boto3.resource('dynamodb')
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 receipts_table = dynamodb.Table('ReceiptsTable')
+
 
 # Endpoint for uploading an image and processing it
 @app.route('/upload-receipt', methods=['POST'])
@@ -67,6 +68,7 @@ def upload_receipt():
         print(f"Error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
+
 # Endpoint for confirming and saving receipt data
 @app.route('/confirm-receipt', methods=['POST'])
 def confirm_receipt():
@@ -106,6 +108,7 @@ def confirm_receipt():
         print(f"Error occurred while saving to DynamoDB: {e}")
         return jsonify({"error": str(e)}), 500
 
+
 @app.route('/update-receipt', methods=['PUT'])
 def update_receipt():
     try:
@@ -143,6 +146,7 @@ def update_receipt():
         print(f"Error updating receipt: {e}")
         return jsonify({'error': str(e)}), 500
     
+
 @app.route('/get-receipt', methods=['GET'])
 def get_receipt():
     try:
@@ -194,6 +198,29 @@ def delete_receipt():
         return jsonify({'message': 'Receipt deleted successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/get-all-receipts', methods=['GET'])
+def get_full_table():
+    """
+    Function retrieves all items in the table and returns it as a json object. 
+    This is mainly used for pulling the database so that it may be displayed in a table in JSX.
+    """
+    try:
+        print("Received request for all receipts.")
+        
+        response = receipts_table.scan(Limit=10)
+        print(response)
+        items = response.get('Items', [])
+        
+        print(f"Fetched {len(items)} receipts.")
+        
+        return jsonify(items), 200
+
+    except Exception as e:
+        print(f"Error fetching all receipts: {e}")
+        return jsonify({'error': str(e)}), 500
+
 
 
 if __name__ == '__main__':
