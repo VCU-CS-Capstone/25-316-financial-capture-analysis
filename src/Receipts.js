@@ -11,7 +11,7 @@ const Receipts = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [data, setData] = useState([]);
-    const [dateRange, setDateRange] = useState([null, null]);
+    const [dateRange, setDateRange] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [dropDownCategories, setDropDownCategories] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -71,7 +71,7 @@ const Receipts = () => {
     };
 
     const clearFilters = () => {
-        setDateRange([null, null]);
+        setDateRange([]);
         setSelectedCategory(null);
         setSearchTerm(""); 
     };

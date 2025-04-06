@@ -14,7 +14,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     // FILTERING OPTIONS
-    const [dateRange, setDateRange] = useState([null, null]);
+    const [dateRange, setDateRange] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredReceipts, setFilteredReceipts] = useState([]);
@@ -63,7 +63,7 @@ const Dashboard = () => {
     const handleDateChange = (range) => {
         console.log("Update date");
         if (!range || range.length !== 2) {
-            setDateRange([null, null]);
+            setDateRange([]);
         } else {
             setDateRange(range);
         }
@@ -126,7 +126,7 @@ const Dashboard = () => {
 
     // Clear filters function to reset options
     const clearFilters = () => {
-        setDateRange([null, null]);
+        setDateRange([]);
         setSelectedCategory(null);
         setSearchTerm(""); 
     };
