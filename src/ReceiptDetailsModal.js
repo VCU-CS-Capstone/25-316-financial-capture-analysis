@@ -49,35 +49,37 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editedData)
             });
-
+    
             console.log("Response Status:", response.status);
             console.log("Response Headers:", response.headers);
             const responseBody = await response.json().catch(() => null);
             console.log("Response Body:", responseBody);
-
+            
             if (response.ok) {
                 setIsEditing(false);
                 console.log('After setting isEditing:', isEditing);
-
+                
+                // Validate PK and SK
                 if (!editedData.PK || !editedData.SK) {
                     console.error("Missing PK or SK in request - Cannot fetch updated receipt");
                     return;
                 }
-
+    
                 console.log("Fetching updated receipt with PK:", editedData.PK, "SK:", editedData.SK);
-
-                const updatedReceiptResponse = await fetch(
-                    `${config.API_URL}/get-receipt?PK=${encodeURIComponent(editedData.PK)}&SK=${encodeURIComponent(editedData.SK)}`
-                );
+    
+                // Fetch updated data immediately from backend
+                const updatedReceiptResponse = await fetch(`http://localhost:5000/get-receipt?PK=${encodeURIComponent(editedData.PK)}&SK=${encodeURIComponent(editedData.SK)}`);
                 const updatedReceipt = await updatedReceiptResponse.json();
-
+    
                 if (updatedReceipt.error) {
                     console.error("Error fetching updated receipt:", updatedReceipt.error);
                     return;
                 }
-
+    
                 console.log("Updated Receipt from AWS:", updatedReceipt);
-                setEditedData(prev => ({ ...prev, ...updatedReceipt }));
+               // refreshReceipts(updatedReceipt); // Fetch updated data from AWS after saving
+                // **Ensure state updates correctly**
+                setEditedData(prev => ({ ...prev, ...updatedReceipt }));         
             } else {
                 console.error('Failed to update receipt:', responseBody);
             }
@@ -85,10 +87,11 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
             console.error('Error updating receipt:', error);
         }
     };
+    
 
     const handleDeleteReceipt = async () => {
         try {
-            const response = await fetch(`${config.API_URL}/delete-receipt`, {
+            const response = await fetch('http://localhost:5000/delete-receipt', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -102,7 +105,7 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
 
             console.log("Receipt deleted successfully");
             setShowDeleteSuccess(true);
-        } catch (error) {
+        }catch (error) {
             console.error("Error deleting receipt:", error);
         }
     };
@@ -114,28 +117,32 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
             let oldValue = receipt[key];
             let newValue = editedData[key];
     
+            // Ensure TotalAmount is always compared as a number
             if (key === "TotalAmount") {
                 oldValue = parseFloat(oldValue);
                 newValue = parseFloat(newValue);
             }
     
+            // Normalize strings to avoid false positives
             if (typeof oldValue === "string") oldValue = oldValue.trim();
             if (typeof newValue === "string") newValue = newValue.trim();
     
             if (oldValue !== newValue) {
-                changedFields[key] = true;
+                changedFields[key] = true; // Mark only if there's a true difference
             }
         });
     
         console.log("Changed fields: ", changedFields);
         if (Object.keys(changedFields).length > 0) {
             console.log("Changes detected before closing modal.");
-            refreshReceipts(editedData, changedFields);
+            refreshReceipts(editedData, changedFields); // Pass only actual changes
         }
     
-        onClose();
+        onClose(); // Close the modal
     };
-
+    
+    
+    
     return (
         <div className="modal-overlay">
             <div className="modal-content">
@@ -145,44 +152,67 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                     <div className="receipt-info" style={{ flex: 1, textAlign: 'left' }}>
                         {isEditing ? (
                             <>
-                                <label>Vendor: <input type="text" name="VendorName" value={editedData.VendorName} onChange={handleChange} /></label>
-                                <label>Address: <input type="text" name="VendorAddress" value={editedData.VendorAddress} onChange={handleChange} /></label>
-                                <label>Date of Transaction: <input type="text" name="TransactionDate" value={editedData.TransactionDate} onChange={handleChange} placeholder="MM/DD/YYYY" maxLength="10" /></label>
-                                <label>Expense Type:
-                                    <select
-                                        id="ExpenseCategory"
-                                        value={expenseCategory}
-                                        onChange={(e) => {
-                                            setExpenseCategory(e.target.value);
-                                            setEditedData((prevData) => ({ ...prevData, ExpenseType: e.target.value }));
-                                        }}
-                                        style={{ padding: '5px', width: '200px' }}
-                                    >
-                                        <option value="" disabled>Select Category</option>
-                                        <option value="Restaurant">Restaurant</option>
-                                        <option value="Entertainment">Entertainment</option>
-                                        <option value="Gas">Gas</option>
-                                        <option value="Utilities">Utilities</option>
-                                        <option value="Grocery">Grocery</option>
-                                        <option value="Other">Other</option>
-                                        <option value="Housing">Housing</option>
-                                        <option value="Clothing">Clothing</option>
-                                        <option value="Travel">Travel</option>
-                                        <option value="Insurance">Insurance</option>
-                                        <option value="Healthcare/Medical">Healthcare/Medical</option>
-                                        <option value="Education">Education</option>
-                                        <option value="Transportation">Transportation</option>
-                                        <option value="Subscriptions">Subscriptions</option>
-                                        <option value="Gifts/Donations">Gifts/Donations</option>
-                                        <option value="Childcare">Childcare</option>
-                                        <option value="Personal Care">Personal Care</option>
-                                        <option value="Pets">Pets</option>
-                                    </select>
-                                </label>
-                                <label>Total Amount: <input type="text" name="TotalAmount" value={editedData.TotalAmount} onChange={handleChange} /></label>
+                            <div className="edit-form">
+                              <div className="form-group">
+                                <label>Vendor:</label>
+                                <input type="text" name="VendorName" value={editedData.VendorName} onChange={handleChange} />
+                              </div>
+                              <div className="form-group">
+                                <label>Address:</label>
+                                <input type="text" name="VendorAddress" value={editedData.VendorAddress} onChange={handleChange} />
+                              </div>
+                              <div className="form-group">
+                                <label>Date of Transaction:</label>
+                                <input type="text" name="TransactionDate" value={editedData.TransactionDate} onChange={handleChange} placeholder="MM/DD/YYYY" maxLength="10" />
+                              </div>
+                              <div className="form-group">
+                                <label>Expense Type:</label>
+                                <select
+                                  id="ExpenseCategory"
+                                  value={expenseCategory}
+                                  onChange={(e) => {
+                                    setExpenseCategory(e.target.value);
+                                    setEditedData((prevData) => ({ ...prevData, ExpenseType: e.target.value }));
+                                  }}
+                                >
+                                  <option value="" disabled>Select Category</option>
+                                  <option value="Restaurant">Restaurant</option>
+                                  <option value="Entertainment">Entertainment</option>
+                                  <option value="Gas">Gas</option>
+                                  <option value="Utilities">Utilities</option>
+                                  <option value="Grocery">Grocery</option>
+                                  <option value="Other">Other</option>
+                                  <option value="Housing">Housing</option>
+                                  <option value="Clothing">Clothing</option>
+                                  <option value="Travel">Travel</option>
+                                  <option value="Insurance">Insurance</option>
+                                  <option value="Healthcare/Medical">Healthcare/Medical</option>
+                                  <option value="Education">Education</option>
+                                  <option value="Transportation">Transportation</option>
+                                  <option value="Subscriptions">Subscriptions</option>
+                                  <option value="Gifts/Donations">Gifts/Donations</option>
+                                  <option value="Childcare">Childcare</option>
+                                  <option value="Personal Care">Personal Care</option>
+                                  <option value="Pets">Pets</option>
+                                </select>
+                              </div>
+                              <div className="form-group">
+                                <label>Total Amount:</label>
+                                <input type="text" name="TotalAmount" value={editedData.TotalAmount} onChange={handleChange} />
+                              </div>
+                            </div>
                                 <div className="button-group">
-                                    <button className="edit-save-button" onClick={handleSave}>Save Changes</button>
-                                    <button className="edit-cancel-button" onClick={() => setIsEditing(false)}>Cancel Changes</button>
+                                    {isEditing ? (
+                                        <>
+                                            <button className="edit-save-button" onClick={handleSave}>Save Changes</button>
+                                            <button className="edit-cancel-button" onClick={() => setIsEditing(false)}>Cancel Changes</button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button onClick={handleEditClick} className="edit-button">Edit Receipt Details</button>
+                                            <button onClick={() => setShowDeleteConfirmation(true)} className="delete-button">Delete Receipt</button>
+                                        </>
+                                    )}
                                 </div>
                             </>
                         ) : (
@@ -190,9 +220,8 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                                 <p><strong>Vendor:</strong> {editedData.VendorName || 'N/A'}</p>
                                 <p><strong>Address:</strong> {editedData.VendorAddress || 'N/A'}</p>
                                 <p><strong>Date of Transaction:</strong> {editedData.TransactionDate || 'N/A'}</p>
-                                <p><strong>Upload Date:</strong> {editedData.UploadDate}</p>
                                 <p><strong>Expense Type:</strong> {editedData.ExpenseType || 'N/A'}</p>
-                                <p><strong>Total Spent:</strong> ${editedData.TotalAmount}</p>
+                                <p><strong>Total Spent:</strong> ${editedData.TotalAmount}</p>                              
                             </>
                         )}
                     </div>
@@ -226,19 +255,26 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                         </>
                     )}
                 </div>
+                
             </div>
+            
+            
 
+            {/* Full Image Modal */}
             {showFullImage && (
                 <div className="image-modal">
-                    <div className="image-modal-content">
-                        <img src={receipt.ImageURL} alt="Full Receipt" />
-                        <button className="close-button" onClick={() => setShowFullImage(false)}>×</button>
-                    </div>
+                <div className="image-modal-content">
+                    <img 
+                        src={receipt.ImageURL} 
+                        alt="Full Receipt" 
+                    />
+                    <button className="close-button" onClick={() => setShowFullImage(false)}>×</button>
                 </div>
+            </div>
             )}
             {showDeleteConfirmation && (
                 <div className="modal-overlay">
-                    <div className="modal-content">
+                    <div className="delete-modal">
                         <h2>Confirm Deletion</h2>
                         <p>Are you sure you want to delete this receipt?</p>
                         <div className="delete-button-group">
@@ -248,15 +284,17 @@ const ReceiptDetailsModal = ({ receipt, onClose, onSave, refreshReceipts }) => {
                     </div>
                 </div>
             )}
+            
             {showDeleteSuccess && (
                 <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>Receipt Deleted</h2>
+                    <div className="delete-modal">
+                        <button onClick={() => window.location.reload()} className="close-button">x</button>
                         <p>The receipt has been successfully deleted.</p>
-                        <button onClick={() => window.location.reload()} className="close-button">Close</button>
                     </div>
                 </div>
             )}
+
+            
         </div>
     );
 };
