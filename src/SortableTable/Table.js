@@ -2,7 +2,7 @@ import TableBody from "./TableBody";
 import TableHead from "./TableHead";
 import { useSortableTable } from "./useSortableTable";
 
-const Table = ({ data, lastUpdatedReceipt, onEdit, lastUpdatedFields }) => {
+const Table = ({ data, lastUpdatedReceipt, onEdit, lastUpdatedFields, highlightRowKey }) => {
     const columns = [
         { label: "Transaction Date", accessor: "Date", sortable: true },
         { label: "Upload Date", accessor: "UploadDate", sortable: true },
@@ -22,8 +22,9 @@ const Table = ({ data, lastUpdatedReceipt, onEdit, lastUpdatedFields }) => {
                     columns={columns} 
                     tableData={sortedData} 
                     onEdit={onEdit}
-                    lastUpdatedReceipt={lastUpdatedReceipt}  // Pass highlight 
+                    lastUpdatedReceipt={lastUpdatedReceipt}  // Pass highlight to individual cell
                     lastUpdatedFields={lastUpdatedFields}
+                    highlightRowKey={highlightRowKey} // Pass highlight to an entire row when uploaded
                 />
             </table>
         </>
