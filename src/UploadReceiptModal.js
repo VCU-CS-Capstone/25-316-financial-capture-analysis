@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './UploadModal.css';
-import config from './config'
+//import config from './config'
 
-function UploadReceiptModal({ isOpen, onClose }) {
+function UploadReceiptModal({ isOpen, onClose, onUploadSuccess }) {
     const fileInputRef = useRef(null);
     const [uploadStatus, setUploadStatus] = useState('');
     const [loadingDots, setLoadingDots] = useState('');
@@ -23,7 +23,6 @@ function UploadReceiptModal({ isOpen, onClose }) {
         }
     }, [uploadStatus]);
     
-
     if (!isOpen) return null;
 
     const handleUploadClick = () => {
@@ -38,7 +37,7 @@ function UploadReceiptModal({ isOpen, onClose }) {
 
             try {
                 setUploadStatus('Uploading');
-                const response = await fetch(`${config.API_URL}/upload-receipt`, {
+                const response = await fetch('http://localhost:5000/upload-receipt', {
                     method: 'POST',
                     body: formData,
                 });
@@ -112,7 +111,7 @@ function UploadReceiptModal({ isOpen, onClose }) {
         console.log("Data being sent to database:", payload);
 
         try {
-            const response = await fetch(`${config.API_URL}/confirm-receipt`, {
+            const response = await fetch(`${config.API_URL}/confirm-receipt` , {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -131,6 +130,7 @@ function UploadReceiptModal({ isOpen, onClose }) {
             setEditedData(null);
             setUploadStatus('');
             setExpenseCategory('');
+            onUploadSuccess(responseData);
             onClose();
         } catch (error) {
             console.error("Fetch error:", error);
@@ -152,13 +152,18 @@ function UploadReceiptModal({ isOpen, onClose }) {
                         &times;
                     </button>
                 </div>
-                <h2 style={{ fontSize: '25px', textAlign: 'left' }}>Photo Tips</h2>
-                <h2 style={{ fontSize: '17px', textAlign: 'left' }}>For best results-</h2>
-                <ul style={{ textAlign: 'left' }}>
-                    <li>Place the receipt on a dark, flat surface with the receipt centered in the frame.</li>
-                    <li>Minimize any objects or clutter around the receipt to avoid interference.</li>
-                    <li>Position the camera directly over your receipt, not at an angle</li>
-                </ul>
+                {!ocrResult && (
+                    <>
+                        <h2 style={{ fontSize: '25px', textAlign: 'left' }}>Photo Tips</h2>
+                        <h2 style={{ fontSize: '17px', textAlign: 'left' }}>For best results-</h2>
+                        <ul style={{ textAlign: 'left' }}>
+                        <li>Place the receipt on a dark, flat surface with the receipt centered in the frame.</li>
+                        <li>Minimize any objects or clutter around the receipt to avoid interference.</li>
+                        <li>Position the camera directly over your receipt, not at an angle</li>
+                        </ul>
+                        <button className="upload-button" onClick={handleUploadClick}>Upload Receipt</button>
+                    </>
+                )}
                 <input
                     type="file"
                     accept="image/*"
@@ -166,7 +171,6 @@ function UploadReceiptModal({ isOpen, onClose }) {
                     style={{ display: 'none' }}
                     onChange={handleFileChange}
                 />
-                <button className="upload-button" onClick={handleUploadClick}>Upload Receipt</button>
                 {uploadStatus && <p className="upload-status">{uploadStatus}{uploadStatus === 'Uploading' ? loadingDots : ''}</p>}
                 {ocrResult && (
                     <div>
