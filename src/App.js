@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import './Dashboard.js';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
@@ -37,16 +37,6 @@ function RecButton(){
   );
 }
 
-/*
-function DealButton(){
-  return (
-    <div>
-      <button className='SideButtons'>Nearby Deals</button>
-    </div>
-  );
-}
-*/
-
 function UploadButton({ onClick }) {
   return (
     <div>
@@ -55,18 +45,20 @@ function UploadButton({ onClick }) {
   );
 }
 
-const Line = ({ color }) => (
-  <hr
-    style={{
-      color: "#f2f2f2",
-      backgroundColor: "#f2f2f2",
-      height: 3,
-    }}
-  />
-);
-
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newReceipt, setNewReceipt] = useState(null);
+  
+  // When the upload modal calls onUploadSuccess, store the new receipt.
+  const handleUploadSuccess = (receipt) => {
+    console.log("App: handleUploadSuccess called with", receipt);
+    setNewReceipt(receipt);
+    setIsModalOpen(false);
+  };
+
+  useEffect(() => {
+    console.log("App.js: newReceipt state changed to:", newReceipt);
+  }, [newReceipt]);
 
   return (
     <BrowserRouter>
@@ -81,7 +73,7 @@ function App() {
 
           {/* Existing routes */}
           <Route path="/Dashboard" element={<Dashboard />} />
-          <Route path="/Receipts" element={<Receipts />} />
+          <Route path="/Receipts" element={<Receipts newReceipt={newReceipt} />} />
 
           {/* Fallback route for undefined paths */}
           <Route path="*" element={<Dashboard />} />
@@ -95,9 +87,11 @@ function App() {
           <UploadReceiptModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
+            onUploadSuccess={handleUploadSuccess}
           />
         )}
       </div>
+
     </BrowserRouter>
   );
 }
