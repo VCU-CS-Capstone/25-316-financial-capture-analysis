@@ -61,6 +61,7 @@ const Dashboard = () => {
     // }
 
     const handleDateChange = (range) => {
+        console.log("Update date");
         if (!range || range.length !== 2) {
             setDateRange([null, null]);
         } else {
@@ -83,6 +84,7 @@ const Dashboard = () => {
     
             const applySearchFilters = filterReceipts(result, dateRange, selectedCategory, searchTerm);
             setFilteredReceipts(applySearchFilters);
+            console.log("Search filtered results");
         } catch (error) {
             console.error('Error fetching data:', error);
             setError(error.message);
@@ -224,6 +226,7 @@ const Dashboard = () => {
     
     // Update state with the selected category
     const handleCategoryChange = (option) => {
+        console.log("Update category");
         setSelectedCategory(option.value); 
     };
 
@@ -401,26 +404,7 @@ const Dashboard = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredReceipts.filter(item => {
-                                    const isDateValid = (() => {
-                                        if (dateRange && dateRange.length === 2) {
-                                            const [startDate, endDate] = dateRange;
-                                            const isValidStart = startDate instanceof Date && !isNaN(startDate);
-                                            const isValidEnd = endDate instanceof Date && !isNaN(endDate);
-                                            if (isValidStart && isValidEnd) {
-                                                const itemDate = new Date(item.Date);
-                                                return itemDate >= startDate && itemDate <= endDate;
-                                            }
-                                        }
-                                        return true;
-                                    })();
-
-                                    const isCategoryValid = selectedCategory === "None" || 
-                                        selectedCategory == null || 
-                                        item.ExpenseType === selectedCategory;
-
-                                    return isDateValid && isCategoryValid;
-                                })
+                            {filteredReceipts
                                 .sort((a, b) => new Date(b.Date) - new Date(a.Date)) // Sort by date
                                 .map((item, index) => (
                                     <tr key={index}>
@@ -431,7 +415,8 @@ const Dashboard = () => {
                                         <td>{item.VendorName}</td>
                                         <td>{item.ExpenseType}</td>
                                     </tr>
-                                ))}
+                                ))
+                            }
                             </tbody>
                         </table>
                     </div>
@@ -454,43 +439,7 @@ const Dashboard = () => {
                                     <tr>
                                         <td>
                                             Amount: $
-                                            {
-                                                filteredReceipts.filter(item => {
-                                                    // Validate item has required fields
-                                                    if (!item.TotalAmount || typeof item.TotalAmount !== 'number' || isNaN(item.TotalAmount)) {
-                                                        // console.warn("Invalid TotalAmount in item:", item);
-                                                        return false;
-                                                    }
-
-                                                    if (!item.Date || isNaN(new Date(item.Date))) {
-                                                        // console.warn("Invalid Date in item:", item);
-                                                        return false;
-                                                    }
-
-                                                    // Validate and filter based on date range
-                                                    if (dateRange && dateRange.length === 2) {
-                                                        const [startDate, endDate] = dateRange;
-                                                        const isValidStart = startDate instanceof Date && !isNaN(startDate);
-                                                        const isValidEnd = endDate instanceof Date && !isNaN(endDate);
-
-                                                        if (isValidStart && isValidEnd) {
-                                                            const itemDate = new Date(item.Date);
-                                                            if (itemDate < startDate || itemDate > endDate) {
-                                                                return false;
-                                                            }
-                                                        }
-                                                    }
-                                    
-                                                    // Validate and filter based on selected category
-                                                    if (selectedCategory && selectedCategory !== "None" && item.ExpenseType !== selectedCategory) {
-                                                        return false;
-                                                    }
-
-                                                    return true; // Include item if it passes all checks
-                                                })
-                                                .reduce((total, item) => total + item.TotalAmount, 0)
-                                                .toFixed(2)
-                                            }
+                                            { filteredReceipts.reduce((total, item) => total + item.TotalAmount, 0).toFixed(2) }
                                         </td>
                                     </tr>
                                 </tbody>
