@@ -70,3 +70,18 @@ transition: 0.1s; */
 .highlight-row.fade-out {
   background-color: transparent;
 }
+
+.highlight-new-receipt {
+  background-color: yellow; 
+  transition: background-color 3s ease-out;
+}
+
+.highlight-cell {
+  background-color: yellow;
+  transition: background-color 1s ease-in-out, opacity 3s ease-in-out;
+}
+
+.fade-out {
+  background-color: transparent !important;
+  opacity: 1 !important;
+}
