@@ -7,7 +7,7 @@ import Dropdown from 'react-dropdown';
 import ReceiptDetailsModal from './ReceiptDetailsModal';
 import Table from "./SortableTable/Table";
 
-const Receipts = () => {
+const Receipts = ({ newReceipt }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [data, setData] = useState([]);
@@ -20,24 +20,31 @@ const Receipts = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [lastUpdatedReceipt, setLastUpdatedReceipt] = useState(null);
     const [lastUpdatedFields, setLastUpdatedFields] = useState(null);
+    const [tableKeys, setTableKeys] = useState([]);
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [highlightRowKey, setHighlightRowKey] = useState(null);
 
     // Function for retrieving data from the DynamoDB table
     const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await fetch('https://fryt5r9woh.execute-api.us-east-1.amazonaws.com/items');  // Old response using AWS API
+            const response = await fetch('https://fryt5r9woh.execute-api.us-east-1.amazonaws.com/items');
             // const response = await fetch('http://localhost:5000/get-all-receipts'); // New response using flask_app.py
-            
+
             if (!response.ok) { throw new Error(`HTTP error! Status: ${response.status}`); }
-    
+
             const result = await response.json();
             setData(result);
-    
-            const uniqueCategories = ["None", ...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
+
+            setTableKeys(result.map(item => item.PK + item.SK)); // Used for tracking new receipt uploads for highlighting
+            console.log("Receipts, table keys are ", tableKeys);
+
+            const uniqueCategories = [...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
             setDropDownCategories(uniqueCategories); // Store unique categories before applying search filters
-    
+
             const applySearchFilters = filterReceipts(result, dateRange, selectedCategory, searchTerm);
             setFilteredReceipts(applySearchFilters);
+
         } catch (error) {
             console.error('Error fetching data:', error);
             setError(error.message);
@@ -107,7 +114,10 @@ const Receipts = () => {
             setLastUpdatedFields(null); // Only clear after new data loads
         }, 3000);
     };
-    
+
+    useEffect(() => {
+        console.log("Receipts, New receipt value just passed in: ", newReceipt);
+    }, [newReceipt]);
 
     // This useEffect is only activated when all filter options are cleared, which can only happen with `clearFilters()` above
     useEffect(() => {
@@ -115,11 +125,6 @@ const Receipts = () => {
             fetchData();
         }
     }, [dateRange, selectedCategory, searchTerm]);
-
-    const openModal = (receiptData) => {
-        setSelectedReceipt(receiptData);
-        setIsModalOpen(true);
-    };
 
     const closeModal = () => {
         setSelectedReceipt(null);
@@ -129,13 +134,12 @@ const Receipts = () => {
   
     const handleDateChange = (range) => {
         if (!range || range.length !== 2) {
-            setDateRange([null, null]);
+            setDateRange([]);
         } else {
             setDateRange(range);
         }
     };
     
-
     // Get the data as soon as the page loads up
     useEffect(() => {
         fetchData();
@@ -149,7 +153,57 @@ const Receipts = () => {
         setSelectedReceipt(receipt);
         setIsModalOpen(true);
     };
+
+    useEffect(() => {
+        if (newReceipt) {
+            console.log("Receipts.js: New receipt received via props:", newReceipt);
+            closeUploadModal(newReceipt);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [newReceipt]);
+
+    const closeUploadModal = (newReceipt) => {
+        console.log("Receipts.js: closeUploadModal triggered", newReceipt);
+        // Optionally, if you're using a separate upload modal state, close it:
+        setIsUploadModalOpen(false);
     
+        if (newReceipt && newReceipt.PK && newReceipt.SK) {
+            // Merge the new receipt into your existing data
+            setData(prevData => {
+                const updatedData = [...prevData, newReceipt];
+                setFilteredReceipts(filterReceipts(updatedData, dateRange, selectedCategory, searchTerm));
+                return updatedData;
+            });
+    
+            // Build the key for the new receipt
+            const newKey = newReceipt.PK + newReceipt.SK;
+            console.log("Receipts.js: New receipt key:", newKey);
+    
+            // Check if this key already exists in the pre-upload snapshot
+            if (!tableKeys.includes(newKey)) {
+                console.log("Receipts.js: New receipt detected – highlighting row:", newKey);
+                setLastUpdatedFields({
+                    key: newKey,
+                    fields: {
+                        Date: true,
+                        VendorName: true,
+                        ExpenseType: true,
+                        TotalAmount: true,
+                        UploadDate: true,
+                    },
+                });
+                setHighlightRowKey(newKey);
+                setTimeout(() => {
+                    console.log("Removing highlight for new upload:", newKey);
+                    setHighlightRowKey(null);
+                    setLastUpdatedFields(null);
+                }, 3000); // Or whatever duration your highlight animation needs               
+            }
+    
+            // Optionally, trigger a refresh of the data if needed:
+            fetchData();
+        }
+    };
 
     return (
         <div>
@@ -177,10 +231,10 @@ const Receipts = () => {
                 placeholder="Search receipts..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="Subheading-category search-bar"
                 onKeyDown={(e) => {
-                    if(e.key === 'Enter') { fetchData(); } 
+                    if (e.key === 'Enter') { fetchData(); }
                 }}
+                className="Subheading-category search-bar"
             />
     
             {/* Conditional Rendering for Loading/Error */}
@@ -195,9 +249,9 @@ const Receipts = () => {
                         onEdit={handleEdit} 
                         lastUpdatedReceipt={lastUpdatedReceipt}
                         lastUpdatedFields={lastUpdatedFields}
+                        highlightRowKey={highlightRowKey}
                     />
 
-    
                     {isModalOpen && selectedReceipt && (
                         <ReceiptDetailsModal
                             receipt={selectedReceipt}
@@ -208,8 +262,7 @@ const Receipts = () => {
                 </div>
             )}
         </div>
-    );
-    
+    ); 
 };
 
 export default Receipts;
