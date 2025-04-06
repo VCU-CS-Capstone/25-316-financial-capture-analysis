@@ -9,12 +9,11 @@ from datetime import datetime, timezone
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 # Initialize DynamoDB client
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 receipts_table = dynamodb.Table('ReceiptsTable')
-
 
 # Endpoint for uploading an image and processing it
 @app.route('/upload-receipt', methods=['POST'])
@@ -68,7 +67,6 @@ def upload_receipt():
         print(f"Error occurred: {e}")
         return jsonify({"error": str(e)}), 500
 
-
 # Endpoint for confirming and saving receipt data
 @app.route('/confirm-receipt', methods=['POST'])
 def confirm_receipt():
@@ -80,7 +78,7 @@ def confirm_receipt():
         total_amount = data.get('TotalAmount', '0').replace('$', '').strip()
         expense_type = data.get('ExpenseType', 'Other')  # Default to 'Other' if not provided
 
-        upload_date = datetime.now(timezone.utc).strftime("%m-%d-%Y")  # MM-DD-YYYY format
+        upload_date = datetime.now(timezone.utc).strftime("%m/%d/%Y")  # MM/DD/YYYY format
         
         receipt_item = {
             'PK': f"vendor#{data.get('VendorName', 'unknown')}",
@@ -102,12 +100,12 @@ def confirm_receipt():
         receipts_table.put_item(Item=receipt_item)
         print("Successfully added item to DynamoDB:", receipt_item)
 
-        return jsonify({"message": "Receipt saved successfully", "Upload date": upload_date}), 200
+        return jsonify({**receipt_item, "message": "Receipt saved successfully", "Upload date": upload_date}), 200
+
 
     except Exception as e:
         print(f"Error occurred while saving to DynamoDB: {e}")
         return jsonify({"error": str(e)}), 500
-
 
 @app.route('/update-receipt', methods=['PUT'])
 def update_receipt():
@@ -146,7 +144,6 @@ def update_receipt():
         print(f"Error updating receipt: {e}")
         return jsonify({'error': str(e)}), 500
     
-
 @app.route('/get-receipt', methods=['GET'])
 def get_receipt():
     try:
@@ -177,7 +174,6 @@ def get_receipt():
         print(f"Error fetching receipt: {e}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/delete-receipt', methods=['DELETE'])
 def delete_receipt():
     try:
@@ -199,7 +195,6 @@ def delete_receipt():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/get-all-receipts', methods=['GET'])
 def get_full_table():
     """
@@ -220,8 +215,6 @@ def get_full_table():
     except Exception as e:
         print(f"Error fetching all receipts: {e}")
         return jsonify({'error': str(e)}), 500
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5000,debug=True)
