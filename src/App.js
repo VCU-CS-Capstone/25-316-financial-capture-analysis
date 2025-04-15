@@ -1,88 +1,80 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import './Dashboard.js';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import Dashboard from './Dashboard.js';
 import Receipts from './Receipts.js';
 import Navbar from './NavBar/Navbar.js';
 import LoginSignup from './LoginSignup/LoginSignup.js';
 import UploadReceiptModal from './UploadReceiptModal';
 
-function DashButton(){
+// === Sidebar Buttons ===
+function DashButton() {
   const navigate = useNavigate();
-
-  const handleClick = () => {
-    navigate('./DashBoard');
-  };
-
   return (
-    <div>
-      <button className='SideButtons' onClick={handleClick}>Dashboard</button>
-    </div>
+    <button className='SideButtons' onClick={() => navigate('/DashBoard')}>Dashboard</button>
   );
 }
 
-function RecButton(){
+function RecButton() {
   const navigate = useNavigate();
-
-  const handleClick = () => {
-    navigate('./Receipts');
-  };
-
   return (
-    <div>
-      <button className='SideButtons' onClick={handleClick}>My Receipts</button>
-    </div>
+    <button className='SideButtons' onClick={() => navigate('/Receipts')}>My Receipts</button>
   );
 }
 
 function UploadButton({ onClick }) {
   return (
-    <div>
-      <button className='RecButton' onClick={onClick}>Upload Receipt</button>
-    </div>
+    <button className='RecButton' onClick={onClick}>Upload Receipt</button>
   );
 }
 
+// === Main App ===
 function App() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [newReceipt, setNewReceipt] = useState(null);
-  
-  // When the upload modal calls onUploadSuccess, store the new receipt.
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleUploadClick = () => {
+    setIsModalOpen(true);
+  };
+
   const handleUploadSuccess = (receipt) => {
-    console.log("App: handleUploadSuccess called with", receipt);
+    console.log('App: handleUploadSuccess called with', receipt);
     setNewReceipt(receipt);
     setIsModalOpen(false);
   };
 
   useEffect(() => {
-    console.log("App.js: newReceipt state changed to:", newReceipt);
+    console.log('App.js: newReceipt state changed to:', newReceipt);
   }, [newReceipt]);
 
   return (
     <BrowserRouter>
-      <div style={{
-        backgroundColor: '#f5f5f5',
-        height: '989px',
-      }}>
+      <div className="app-root">
+        {/* Top Navbar */}
         <Navbar />
-        <Routes>
-          {/* Add a default route for "/" */}
-          <Route path="/" element={<Dashboard />} />
 
-          {/* Existing routes */}
-          <Route path="/Dashboard" element={<Dashboard />} />
-          <Route path="/Receipts" element={<Receipts newReceipt={newReceipt} />} />
+        {/* Main section under navbar */}
+        <div className="app-layout">
+          {/* Sidebar on the left */}
+          <div className="sidebar">
+            <div>
+              <DashButton />
+              <RecButton />
+            </div>
+            <UploadButton onClick={handleUploadClick} />
+          </div>
 
-          {/* Fallback route for undefined paths */}
-          <Route path="*" element={<Dashboard />} />
-        </Routes>
+          {/* Content on the right */}
+          <div className="main-content">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/DashBoard" element={<Dashboard />} />
+              <Route path="/Receipts" element={<Receipts />} />
+            </Routes>
+          </div>
+        </div>
 
-        <DashButton />
-        <RecButton />
-        <UploadButton onClick={() => setIsModalOpen(true)} />
-        
+        {/* Modal for Upload Receipt */}
         {isModalOpen && (
           <UploadReceiptModal
             isOpen={isModalOpen}
@@ -91,7 +83,6 @@ function App() {
           />
         )}
       </div>
-
     </BrowserRouter>
   );
 }
