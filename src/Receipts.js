@@ -202,7 +202,7 @@ const Receipts = ({ newReceipt }) => {
     };
 
     return (
-        <div>
+        <div className='dashboard-wrapper'>
             <h1 className='Headings'>Receipts</h1>
             
             <div className='filter-row'>

@@ -65,7 +65,7 @@ function App() {
           </div>
 
           {/* Content on the right */}
-          <div className="main-content">
+          <div className="main-content" style={{ overflowY: 'auto', maxHeight: 'auto' }}>
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/DashBoard" element={<Dashboard />} />

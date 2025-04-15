@@ -16,7 +16,7 @@ const Table = ({ data, lastUpdatedReceipt, onEdit, lastUpdatedFields, highlightR
 
     return (
         <>
-            <div style={{ overflowY: 'auto', maxHeight: '440px' }} >
+            <div style={{ overflowY: 'auto', maxHeight: 'auto' }} >
                 <table className="table">
                     <TableHead columns={columns} handleSorting={handleSorting} />
                     <TableBody 
