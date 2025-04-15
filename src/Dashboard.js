@@ -83,7 +83,9 @@ const Dashboard = () => {
           labels: labels.length ? labels : ['No Data'],
           datasets: [{
             data: labels.length ? dataValues : [1],
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9966FF']
+            backgroundColor: filteredData.length > 0 
+                                ? ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9966FF']
+                                : ['#E0E0E0'],
           }]
         },
         options: {
@@ -146,49 +148,51 @@ const Dashboard = () => {
       ) : error ? (
         <p>Error: {error}</p>
       ) : (
-        <div className='dashboard-content'>
-          <div className='flexContainer'>
-            <div className='BodyContainer chart-line shadow roundBorder'>
-              <strong>Total of Monthly Expenses</strong>
-              <canvas ref={chartRef}></canvas>
-            </div>
-
-            <div className='BodyContainer chart-donut shadow roundBorder'>
-              <strong>Expense Category Breakdown</strong>
-              <canvas className='donutChart' ref={donutChartRef}></canvas>
-              <p>
-                Amount: $
-                {filteredReceipts.reduce((total, item) => total + (item.TotalAmount || 0), 0).toFixed(2)}
-              </p>
-            </div>
-
-            <div className='BodyContainer table-wrapper shadow roundBorder'>
-              <div style={{ overflowY: 'auto', maxHeight: '200px' }}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Transaction Date</th>
-                      <th>Upload Date</th>
-                      <th>Total Amount</th>
-                      <th>Merchant</th>
-                      <th>Category</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredReceipts.sort((a, b) => new Date(b.Date) - new Date(a.Date)).map((item, index) => (
-                      <tr key={index}>
-                        <td>{item.Date}</td>
-                        <td>{item.UploadDate}</td>
-                        <td>{(item.TotalAmount || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-                        <td>{item.VendorName}</td>
-                        <td>{item.ExpenseType}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+        <div style={{ overflowY: 'auto', maxHeight: '500px' }}>
+          <div className='dashboard-content'>
+            <div className='flexContainer'>
+              <div className='BodyContainer chart-line shadow roundBorder'>
+                <strong>Total of Monthly Expenses</strong>
+                <canvas ref={chartRef}></canvas>
               </div>
-            </div>
 
+              <div className='BodyContainer chart-donut shadow roundBorder'>
+                <strong>Expense Category Breakdown</strong>
+                <canvas className='donutChart' ref={donutChartRef}></canvas>
+                <p>
+                  Amount: $
+                  {filteredReceipts.reduce((total, item) => total + (item.TotalAmount || 0), 0).toFixed(2)}
+                </p>
+              </div>
+
+              <div className='BodyContainer table-wrapper shadow roundBorder'>
+                <div style={{ overflowY: 'auto', maxHeight: '200px' }}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Transaction Date</th>
+                        <th>Upload Date</th>
+                        <th>Total Amount</th>
+                        <th>Merchant</th>
+                        <th>Category</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredReceipts.sort((a, b) => new Date(b.Date) - new Date(a.Date)).map((item, index) => (
+                        <tr key={index}>
+                          <td>{item.Date}</td>
+                          <td>{item.UploadDate}</td>
+                          <td>{(item.TotalAmount || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
+                          <td>{item.VendorName}</td>
+                          <td>{item.ExpenseType}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       )}

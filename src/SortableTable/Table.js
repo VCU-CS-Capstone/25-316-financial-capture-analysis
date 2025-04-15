@@ -16,17 +16,19 @@ const Table = ({ data, lastUpdatedReceipt, onEdit, lastUpdatedFields, highlightR
 
     return (
         <>
-            <table className="table">
-                <TableHead columns={columns} handleSorting={handleSorting} />
-                <TableBody 
-                    columns={columns} 
-                    tableData={sortedData} 
-                    onEdit={onEdit}
-                    lastUpdatedReceipt={lastUpdatedReceipt}  // Pass highlight to individual cell
-                    lastUpdatedFields={lastUpdatedFields}
-                    highlightRowKey={highlightRowKey} // Pass highlight to an entire row when uploaded
-                />
-            </table>
+            <div style={{ overflowY: 'auto', maxHeight: '440px' }} >
+                <table className="table">
+                    <TableHead columns={columns} handleSorting={handleSorting} />
+                    <TableBody 
+                        columns={columns} 
+                        tableData={sortedData} 
+                        onEdit={onEdit}
+                        lastUpdatedReceipt={lastUpdatedReceipt}  // Pass highlight to individual cell
+                        lastUpdatedFields={lastUpdatedFields}
+                        highlightRowKey={highlightRowKey} // Pass highlight to an entire row when uploaded
+                    />
+                </table>
+            </div>
         </>
     );
 };

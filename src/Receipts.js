@@ -58,21 +58,17 @@ const Receipts = ({ newReceipt }) => {
             const isDateValid = (() => {
                 if (dateRange && dateRange.length === 2 && dateRange[0] && dateRange[1]) {
                     const [startDate, endDate] = dateRange.map(date => new Date(date));
-                    
                     if (!isNaN(startDate) && !isNaN(endDate)) {
                         const itemDate = new Date(item.Date);
                         return itemDate >= startDate && itemDate <= endDate;
                     }
                 }
-                return true; // If no valid date range, do not filter by date
+                return true;
             })();
-    
+
             const isCategoryValid = selectedCategory === "None" || selectedCategory == null || item.ExpenseType === selectedCategory;
-    
-            const isSearchValid = searchTerm
-                ? item.VendorName?.toLowerCase().includes(searchTerm.toLowerCase()) // Apply search filter
-                : true;  // No filter applied if empty
-    
+            const isSearchValid = searchTerm ? item.VendorName?.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+
             return isDateValid && isCategoryValid && isSearchValid;
         });
     };
@@ -121,7 +117,7 @@ const Receipts = ({ newReceipt }) => {
 
     // This useEffect is only activated when all filter options are cleared, which can only happen with `clearFilters()` above
     useEffect(() => {
-        if (dateRange[0] === null && selectedCategory === null && searchTerm === "") {
+        if (dateRange.length === 0 && selectedCategory === null && searchTerm === "") {
             fetchData();
         }
     }, [dateRange, selectedCategory, searchTerm]);
@@ -208,34 +204,14 @@ const Receipts = ({ newReceipt }) => {
     return (
         <div>
             <h1 className='Headings'>Receipts</h1>
-            <DateRangePicker 
-                showOneCalendar 
-                size="sm" 
-                className='Subheading' 
-                placeholder="Select Date Range" 
-                onChange={handleDateChange}
-                value={dateRange}
-            />
-            <div className='Subheading-category dropdown-menu'>
-                <Dropdown
-                    options={dropDownCategories}
-                    onChange={handleCategoryChange}
-                    placeholder="Select a category"
-                    value={selectedCategory}
-                />
+            
+            <div className='filter-row'>
+                <DateRangePicker placeholder='Select Date Range' onChange={handleDateChange} value={dateRange} format='MM/dd/yyyy' showOneCalendar showTime={false} />
+                <Dropdown options={dropDownCategories} onChange={handleCategoryChange} placeholder='Select a category' value={selectedCategory} />
+                <button className='clear-button roundBorder' onClick={clearFilters}>Clear</button>
+                <button className='filter-button roundBorder' onClick={fetchData}>Search</button>
+                <input type='text' className='search-bar' placeholder='Search receipts...' value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && fetchData()} />
             </div>
-            <button className='Subheading-category roundBorder clear-button' onClick={clearFilters}>Clear</button>
-            <button className='Subheading-category roundBorder filter-button' onClick={fetchData}>Search</button>
-            <input
-                type="text"
-                placeholder="Search receipts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter') { fetchData(); }
-                }}
-                className="Subheading-category search-bar"
-            />
     
             {/* Conditional Rendering for Loading/Error */}
             {loading ? (
