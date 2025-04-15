@@ -148,7 +148,6 @@ const Dashboard = () => {
       ) : error ? (
         <p>Error: {error}</p>
       ) : (
-        <div style={{ overflowY: 'auto', maxHeight: '500px' }}>
           <div className='dashboard-content'>
             <div className='flexContainer'>
               <div className='BodyContainer chart-line shadow roundBorder'>
@@ -166,7 +165,7 @@ const Dashboard = () => {
               </div>
 
               <div className='BodyContainer table-wrapper shadow roundBorder'>
-                <div style={{ overflowY: 'auto', maxHeight: '200px' }}>
+                <div style={{ overflowY: 'auto', maxHeight: 'auto' }}>
                   <table>
                     <thead>
                       <tr>
@@ -194,7 +193,6 @@ const Dashboard = () => {
 
             </div>
           </div>
-        </div>
       )}
     </div>
   );

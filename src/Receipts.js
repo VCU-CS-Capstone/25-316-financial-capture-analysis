@@ -130,16 +130,16 @@ const Receipts = ({ newReceipt }) => {
     }, [newReceipt]);
 
     const closeUploadModal = (newReceipt) => {
+        console.log("Receipts.js: closeUploadModal triggered", newReceipt);
         setIsUploadModalOpen(false);
+    
         if (newReceipt && newReceipt.PK && newReceipt.SK) {
-            setData(prevData => {
-                const updatedData = [...prevData, newReceipt];
-                setFilteredReceipts(filterReceipts(updatedData, dateRange, selectedCategory, searchTerm));
-                return updatedData;
-            });
-
             const newKey = newReceipt.PK + newReceipt.SK;
+            console.log("New receipt key:", newKey);
+    
+            // Set highlight state BEFORE fetch
             if (!tableKeys.includes(newKey)) {
+                console.log("New receipt detected – highlighting row:", newKey);
                 setLastUpdatedFields({
                     key: newKey,
                     fields: {
@@ -151,17 +151,16 @@ const Receipts = ({ newReceipt }) => {
                     },
                 });
                 setHighlightRowKey(newKey);
-                setTimeout(() => {
-                    setHighlightRowKey(null);
-                    setLastUpdatedFields(null);
-                }, 3000);
             }
+    
+            // Refresh data after highlighting state is set
             fetchData();
         }
     };
+    
 
     return (
-        <div className="dashboard-wrapper">
+        <div className='dashboard-wrapper'>
             <h1 className='Headings'>Receipts</h1>
             
             <div className='filter-row'>

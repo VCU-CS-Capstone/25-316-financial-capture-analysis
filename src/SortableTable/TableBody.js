@@ -23,7 +23,7 @@ const TableBody = ({ tableData, columns, onEdit, lastUpdatedFields, highlightRow
                 const isNewRow = highlightRowKey && highlightRowKey === rowKey;
                 
                 return (
-                    <tr key={index}>
+                    <tr key={index} >
                         {columns.map(({ accessor }) => {
                             let isHighlighted = false;
                             // For edited receipts, highlight only if the field was changed.
