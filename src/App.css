@@ -1,66 +1,150 @@
-* {
-  box-sizing: border-box;
+
+html, body, #root {
+  height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
 }
-.SideButtons{
-  background-color: #256386;
+
+thead th {
+  user-select: none;
+  -webkit-user-select: none;  /* Safari */
+  -moz-user-select: none;     /* Firefox */
+  -ms-user-select: none;      /* IE/Edge */
+}
+
+.app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+nav {
+  height: 63px; /* Match NavBar.css */
+  flex-shrink: 0;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+  background-color: white;
+  z-index: 10;
+}
+
+.app-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 240px;
+  background-color: #0c4b5f;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem 0;
+  height: 100%;
+}
+
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+
+.SideButtons, .RecButton {
+  width: 100%;
+  height: 60px;
+  background-color: #0c4b5f;
   border: none;
   color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 28px;
-  width: 300px;
-  margin-bottom: 5px;
-}
-.RecButton{
-  background-color: #256386;
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 28px;
-  width: 300px;
-  position: absolute;
-  bottom: 5px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: left;
+  padding-left: 1rem;
 }
 
-.SideButtons:Hover{
-  background-color: #184e6d;
-  color: WHITE;
+.SideButtons:hover, .RecButton:hover {
+  background-color: #0a3c4d;
 }
 
-.RecButton:Hover{
-  background-color: #184e6d;
-  color: WHITE;
+.dashboard-wrapper {
+  flex: 1;
+  overflow: hidden;
+  padding: 1rem;
+  background-color: #fff;
 }
 
-.Headings{
-  position:absolute;
-  top: 70px;
-  left: 320px;
+.table-wrapper {
+  overflow-y: auto;
+  max-height: 300px;
 }
 
-.Subheading{
-  position:absolute;
-  top: 130px;
-  left: 320px;
+.table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.Logo {
-  padding: 10px 20px;
+.table-wrapper th, .table-wrapper td {
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
 }
 
-.highlight-cell {
-  background-color: yellow;
-  transition: background-color 1s ease-in-out, opacity 3s ease-in-out;
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 1;
 }
 
-.fade-out {
-  background-color: transparent !important;
-  opacity: 0;
+.dashboard-content {
+  display: grid;
+  grid-template-areas:
+    "line donut"
+    "table table";
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 45% 55%;
+  gap: 1rem;
+  height: calc(100% - 160px); 
+  overflow: hidden;
+}
+
+.chart-line {
+  grid-area: line;
+  background-color: white;
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.chart-donut {
+  grid-area: donut;
+  background-color: white;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.BodyContainer {
+  background-color: white;
+  border-radius: 12px;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.roundBorder {
+  border-radius: 8px;
+}
+
+.shadow {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+body.modal-open {
+  overflow: hidden;
 }
