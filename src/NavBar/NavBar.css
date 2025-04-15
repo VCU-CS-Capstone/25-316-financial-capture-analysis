@@ -1,79 +1,67 @@
 .NavBarItems {
-    background: white;
-    height: 63px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 10.75pt;
-    text-decoration: none; 
-    
+  background: white;
+  height: 63px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  font-size: 10.75pt;
+  border-bottom: 1px solid #ddd;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.navbar-left .logo {
+  height: 40px;
+  width: auto;
 }
 
 .nav-menu {
-    display: grid;
-    grid-template-columns: repeat(6, auto);
-    grid-gap: 20px;
-    list-style: none;
-    text-align: center;
-    width: 54vw;
-    justify-content: end;
-    margin-right: 220px;
-    margin-top: 19px;
-    
-}
-
-.logo {
-    position: absolute;
-    margin-right: 1023px;
-    margin-top: 5px;
-    padding: 5px;
-    
+  display: flex;
+  gap: 20px;
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
 }
 
 .nav-menu li {
-    position: relative;
-  }
-  
-  .nav-menu li:hover::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 5px;
-    top: 38px;
-    left: 0;
-    background-color: #3382b1;
-    transition: all 0.3s ease-in-out;
-    opacity: 0; 
-  }
-  
-  .nav-menu li:hover::after {
-    opacity: 1;
-  }
-
-.nav-icons{
-    display: grid;
-    grid-template-columns: repeat(4, auto); /*[first] 20px [line2] 20px [line3] 20px [col4-start] 0px [five] 20px [end]; */
-    grid-gap: 25px;
-    list-style: none;
-    text-align: center;
-    justify-content: end;
-    margin-top: 25px;
-    margin-right: 20vw;
-    
+  position: relative;
 }
 
-.SignButton{
-    background-color: white;
-    border: none;
-    text-align: center;
-    width: 45px;
-    position: absolute;
-    right: 410px;
-    top: 20px;
+.nav-menu li:hover::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 5px;
+  top: 38px;
+  left: 0;
+  background-color: #3382b1;
+  transition: all 0.3s ease-in-out;
+  opacity: 1;
 }
 
-.SignButton:Hover{
-    text-decoration: underline;
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-right: 1rem; /* spacing from edge */
 }
 
+/* Icons layout */
+.nav-icons {
+  display: flex;
+  gap: 15px;
+  font-size: 1.2rem;
+}
 
+/* Sign-in button styling */
+.SignButton {
+  background-color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.SignButton:hover {
+  text-decoration: underline;
+}

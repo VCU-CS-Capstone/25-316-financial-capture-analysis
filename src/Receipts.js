@@ -58,7 +58,7 @@ const Receipts = ({ newReceipt }) => {
                         return itemDate >= startDate && itemDate <= endDate;
                     }
                 }
-                return true;
+                return true; // If no valid date range, do not filter by date
             })();
 
             const isCategoryValid = selectedCategory === "None" || selectedCategory == null || item.ExpenseType === selectedCategory;
@@ -90,7 +90,12 @@ const Receipts = ({ newReceipt }) => {
     };
 
     useEffect(() => {
-        if (dateRange[0] === null && selectedCategory === null && searchTerm === "") {
+        console.log("Receipts, New receipt value just passed in: ", newReceipt);
+    }, [newReceipt]);
+
+    // This useEffect is only activated when all filter options are cleared, which can only happen with `clearFilters()` above
+    useEffect(() => {
+        if (dateRange.length === 0 && selectedCategory === null && searchTerm === "") {
             fetchData();
         }
     }, [dateRange, selectedCategory, searchTerm]);
@@ -158,34 +163,16 @@ const Receipts = ({ newReceipt }) => {
     return (
         <div className="dashboard-wrapper">
             <h1 className='Headings'>Receipts</h1>
+            
             <div className='filter-row'>
-                <DateRangePicker 
-                    showOneCalendar 
-                    size="sm" 
-                    className='date-picker' 
-                    placeholder="Select Date Range" 
-                    onChange={handleDateChange}
-                    value={dateRange}
-                />
-                <Dropdown
-                    options={dropDownCategories}
-                    onChange={handleCategoryChange}
-                    placeholder="Select a category"
-                    value={selectedCategory}
-                    className='dropdown-menu'
-                />
-                <button className='clear-button' onClick={clearFilters}>Clear</button>
-                <button className='filter-button' onClick={fetchData}>Search</button>
-                <input
-                    type="text"
-                    placeholder="Search receipts..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { fetchData(); }}}
-                    className="search-bar"
-                />
+                <DateRangePicker placeholder='Select Date Range' onChange={handleDateChange} value={dateRange} format='MM/dd/yyyy' showOneCalendar showTime={false} />
+                <Dropdown options={dropDownCategories} onChange={handleCategoryChange} placeholder='Select a category' value={selectedCategory} />
+                <button className='clear-button roundBorder' onClick={clearFilters}>Clear</button>
+                <button className='filter-button roundBorder' onClick={fetchData}>Search</button>
+                <input type='text' className='search-bar' placeholder='Search receipts...' value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && fetchData()} />
             </div>
-
+    
+            {/* Conditional Rendering for Loading/Error */}
             {loading ? (
                 <p className='BodyContainer BodyContainer-first shadow roundBorder'>Loading...</p>
             ) : error ? (

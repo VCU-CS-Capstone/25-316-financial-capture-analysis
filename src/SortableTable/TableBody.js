@@ -15,6 +15,7 @@ const TableBody = ({ tableData, columns, onEdit, lastUpdatedFields, highlightRow
     }, [lastUpdatedFields]);
 
     return (
+        
         <tbody>
             {tableData.map((data, index) => {
                 const rowKey = data.PK + data.SK;
