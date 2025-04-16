@@ -34,8 +34,8 @@ const Receipts = ({ newReceipt }) => {
             setData(result);
 
             setTableKeys(result.map(item => item.PK + item.SK));
-            const uniqueCategories = [...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
-            setDropDownCategories(uniqueCategories);
+            // const uniqueCategories = [...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
+            setDropDownCategories(["None", ...new Set(result.map(item => item.ExpenseType).filter(Boolean))]);
 
             const applySearchFilters = filterReceipts(result, dateRange, selectedCategory, searchTerm);
             setFilteredReceipts(applySearchFilters);
