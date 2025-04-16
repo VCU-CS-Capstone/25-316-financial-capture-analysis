@@ -103,6 +103,7 @@ const Receipts = ({ newReceipt }) => {
     const closeModal = () => {
         setSelectedReceipt(null);
         setIsModalOpen(false);
+        setHighlightRowKey(null);
         fetchData();
     };
 

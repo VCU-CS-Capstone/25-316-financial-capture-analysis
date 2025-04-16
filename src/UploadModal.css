@@ -216,7 +216,7 @@ Since UploadReceiptModal.js and ReceiptDetailModal.js files share a few css reso
     background-color: #007bff; 
     color: white;
     border: none;
-    padding: 1px 1px;
+    padding: 5px 5px;
     cursor: pointer;
     border-radius: 5px;
     font-size: 1rem;
