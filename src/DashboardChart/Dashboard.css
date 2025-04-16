@@ -58,8 +58,8 @@
 .table-wrapper thead th {
   position: sticky;
   top: 0;
-  background-color: white;
-  z-index: 2;
+  /* background-color: white; */
+  /* z-index: 2; */
   text-align: left;
 }
 
