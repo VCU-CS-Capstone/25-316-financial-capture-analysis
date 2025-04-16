@@ -52,32 +52,32 @@ const Dashboard = () => {
     }
 };
 
-const fetchData = async () => {
-  try {
-    setLoading(true);
-    const response = await fetch('https://fryt5r9woh.execute-api.us-east-1.amazonaws.com/items');
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('https://fryt5r9woh.execute-api.us-east-1.amazonaws.com/items');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      setData(result);
+
+      const uniqueCategories = [...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
+      setDropDownCategories(["None", ...uniqueCategories]); // Prepend "None" to the dropdown
+
+      const applySearchFilters = filterReceipts(result, dateRange, selectedCategory, searchTerm);
+      setFilteredReceipts(applySearchFilters);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const result = await response.json();
-    setData(result);
-
-    const uniqueCategories = [...new Set(result.map(item => item.ExpenseType).filter(Boolean))];
-    setDropDownCategories(["None", ...uniqueCategories]); // Prepend "None" to the dropdown
-
-    const applySearchFilters = filterReceipts(result, dateRange, selectedCategory, searchTerm);
-    setFilteredReceipts(applySearchFilters);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    setError(error.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
-//Load DynamoDB table data as soon as the page loads
+  //Load DynamoDB table data as soon as the page loads
 
   useEffect(() => {
     fetchData();
@@ -112,101 +112,100 @@ const fetchData = async () => {
     setDateRange(null);
     setSelectedCategory(null);
     setSearchTerm("");
-    fetchData();
   };
 
-    // This useEffect is only activated when all filter options are cleared, which can only happen with `clearFilters()` above
-    useEffect(() => {
-      if ((!dateRange || dateRange[0] === null) && selectedCategory === null && searchTerm === "") {
-          fetchData();
-      }
+  // This useEffect is only activated when all filter options are cleared, which can only happen with `clearFilters()` above
+  useEffect(() => {
+    if ((!dateRange || dateRange[0] === null) && selectedCategory === null && searchTerm === "") {
+        fetchData();
+    }
   }, [dateRange, selectedCategory, searchTerm]);
 
-// Donut Chart
-useEffect(() => {
-  if (donutChartRef.current) {
-      // Filter data based on search, date range, category, and validation
-      const filteredData = filteredReceipts.filter(item => {
-          if (
-              !item.ExpenseType ||
-              typeof item.TotalAmount !== 'number' ||
-              isNaN(item.TotalAmount) ||
-              !item.Date ||
-              !item.VendorName
-          ) {
-              return false;
-          }
+  // Donut Chart
+  useEffect(() => {
+    if (donutChartRef.current) {
+        // Filter data based on search, date range, category, and validation
+        const filteredData = filteredReceipts.filter(item => {
+            if (
+                !item.ExpenseType ||
+                typeof item.TotalAmount !== 'number' ||
+                isNaN(item.TotalAmount) ||
+                !item.Date ||
+                !item.VendorName
+            ) {
+                return false;
+            }
 
-          // Validate the date range
-          if (dateRange && dateRange.length === 2) {
-              const [startDate, endDate] = dateRange || [null, null];
-              const isValidStart = startDate instanceof Date && !isNaN(startDate);
-              const isValidEnd = endDate instanceof Date && !isNaN(endDate);
+            // Validate the date range
+            if (dateRange && dateRange.length === 2) {
+                const [startDate, endDate] = dateRange || [null, null];
+                const isValidStart = startDate instanceof Date && !isNaN(startDate);
+                const isValidEnd = endDate instanceof Date && !isNaN(endDate);
 
-              if (isValidStart && isValidEnd) {
-                  const itemDate = new Date(item.Date);
-                  if (isNaN(itemDate) || itemDate < startDate || itemDate > endDate) {
-                      return false;
-                  }
-              }
-          }
+                if (isValidStart && isValidEnd) {
+                    const itemDate = new Date(item.Date);
+                    if (isNaN(itemDate) || itemDate < startDate || itemDate > endDate) {
+                        return false;
+                    }
+                }
+            }
 
-          // Filter by selected category
-          if (selectedCategory && item.ExpenseType !== selectedCategory) {
-              return false;
-          }
-          return true;
-      });
+            // Filter by selected category
+            if (selectedCategory && item.ExpenseType !== selectedCategory) {
+                return false;
+            }
+            return true;
+        });
 
-      // Aggregate data for chart
-      let chartLabels = [...new Set(filteredData.map(item => item.ExpenseType))];
-      let chartData = chartLabels.map(label =>
-          filteredData
-              .filter(item => item.ExpenseType === label)
-              .reduce((sum, item) => sum + item.TotalAmount, 0)
-      );
+        // Aggregate data for chart
+        let chartLabels = [...new Set(filteredData.map(item => item.ExpenseType))];
+        let chartData = chartLabels.map(label =>
+            filteredData
+                .filter(item => item.ExpenseType === label)
+                .reduce((sum, item) => sum + item.TotalAmount, 0)
+        );
 
-      // If no matching data, show an empty chart
-      if (filteredData.length === 0) {
-          console.warn("No data matches the current filters.");
-          chartLabels = ["No Data"];
-          chartData = [1]; 
-      }
+        // If no matching data, show an empty chart
+        if (filteredData.length === 0) {
+            console.warn("No data matches the current filters.");
+            chartLabels = ["No Data"];
+            chartData = [1]; 
+        }
 
-      // Get the chart context
-      const ctx = donutChartRef.current.getContext('2d');
+        // Get the chart context
+        const ctx = donutChartRef.current.getContext('2d');
 
-      // Destroy existing chart instance if it exists
-      if (donutChartRef.current.chartInstance) {
-          donutChartRef.current.chartInstance.destroy();
-      }
+        // Destroy existing chart instance if it exists
+        if (donutChartRef.current.chartInstance) {
+            donutChartRef.current.chartInstance.destroy();
+        }
 
-      // Create chart instance
-      donutChartRef.current.chartInstance = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-              labels: chartLabels,
-              datasets: [
-                  {
-                      data: chartData,
-                      // Select a random color if there's data; default to grey if there is none
-                      backgroundColor: filteredData.length > 0 
-                          ? ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9966FF']
-                          : ['#E0E0E0'],
-                  }
-              ]
-          },
-          options: {
-              plugins: {
-                  legend: {
-                      position: 'right'
-                  }
-              }
-          }
-      });
-  }
-// }, [filteredReceipts, dateRange, selectedCategory, searchTerm]);
-}, [filteredReceipts]);
+        // Create chart instance
+        donutChartRef.current.chartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        data: chartData,
+                        // Select a random color if there's data; default to grey if there is none
+                        backgroundColor: filteredData.length > 0 
+                            ? ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9966FF']
+                            : ['#E0E0E0'],
+                    }
+                ]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    }
+  // }, [filteredReceipts, dateRange, selectedCategory, searchTerm]);
+  }, [filteredReceipts]);
   
   // Update state with the selected category
   const handleCategoryChange = (option) => setSelectedCategory(option.value);
@@ -325,8 +324,6 @@ useEffect(() => {
           placeholder='Select a category'
           value={selectedCategory}
         />
-        <button className='clear-button roundBorder' onClick={clearFilters}>Clear</button>
-        <button className='filter-button roundBorder' onClick={fetchData}>Search</button>
         <input
           type='text'
           className='search-bar'
@@ -335,6 +332,8 @@ useEffect(() => {
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && fetchData()}
         />
+        <button className='clear-button roundBorder' onClick={clearFilters}>Clear</button>
+        <button className='filter-button roundBorder' onClick={fetchData}>Search</button>
       </div>
   
       {/* Main Dashboard Content */}

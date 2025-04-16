@@ -167,9 +167,9 @@ const Receipts = ({ newReceipt }) => {
             <div className='filter-row'>
                 <DateRangePicker placeholder='Select Date Range' onChange={handleDateChange} value={dateRange} format='MM/dd/yyyy' showOneCalendar showTime={false} />
                 <Dropdown options={dropDownCategories} onChange={handleCategoryChange} placeholder='Select a category' value={selectedCategory} />
+                <input type='text' className='search-bar' placeholder='Search receipts...' value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && fetchData()} />
                 <button className='clear-button roundBorder' onClick={clearFilters}>Clear</button>
                 <button className='filter-button roundBorder' onClick={fetchData}>Search</button>
-                <input type='text' className='search-bar' placeholder='Search receipts...' value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && fetchData()} />
             </div>
     
             {/* Conditional Rendering for Loading/Error */}
