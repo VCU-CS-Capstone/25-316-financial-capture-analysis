@@ -1,5 +1,5 @@
 .NavBarItems {
-  background: white;
+  background: rgb(255, 255, 255);
   height: 63px;
   display: flex;
   align-items: center;
@@ -25,10 +25,12 @@
 }
 
 .nav-menu li {
+  display: flex;
   position: relative;
 }
 
 .nav-menu li:hover::after {
+  display: flex;
   content: '';
   position: absolute;
   width: 100%;
@@ -56,6 +58,7 @@
 
 /* Sign-in button styling */
 .SignButton {
+  display: flex;
   background-color: white;
   border: none;
   font-weight: bold;
@@ -64,4 +67,48 @@
 
 .SignButton:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .NavBarItems {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    padding: 1rem;
+    gap: 0.3rem;
+  }
+
+  .navbar-left {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .navbar-left .logo {
+    height: 35px;
+  }
+
+  .nav-menu {
+    display: none;
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .nav-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nav-icons {
+    display: none;
+    gap: 10px;
+    font-size: 1.4rem;
+  }
+
+  .SignButton {
+    display: none;
+    font-size: 0.95rem;
+    padding: 0.4rem 0.8rem;
+  }
 }

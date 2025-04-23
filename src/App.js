@@ -60,8 +60,8 @@ function App() {
             <div>
               <DashButton />
               <RecButton />
+              <UploadButton onClick={handleUploadClick} />
             </div>
-            <UploadButton onClick={handleUploadClick} />
           </div>
 
           {/* Content on the right */}

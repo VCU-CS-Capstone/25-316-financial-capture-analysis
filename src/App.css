@@ -5,6 +5,7 @@ html, body, #root {
   padding: 0;
   overflow: hidden;
   font-family: Arial, sans-serif;
+  overflow-y: auto;
 }
 
 thead th {
@@ -52,6 +53,7 @@ nav {
   display: flex;
   flex-direction: column;
   background-color: white;
+  overflow-y: auto;
 }
 
 .SideButtons, .RecButton {
@@ -147,4 +149,73 @@ thead th {
 
 body.modal-open {
   overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0.1rem;
+  }
+
+  .SideButtons, .RecButton {
+    width: auto;
+    flex: 1 1 45%;
+    margin: 0.5rem;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  .main-content {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .dashboard-content {
+    grid-template-areas:
+      "line"
+      "donut"
+      "table";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    height: auto;
+  }
+
+  .chart-line,
+  .chart-donut,
+  .dashboard-wrapper,
+  .BodyContainer {
+    padding: 0.75rem;
+  }
+
+  .table-wrapper {
+    overflow-y: auto;
+    height: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .SideButtons, .RecButton {
+    flex: 1 1 0;
+    font-size: 14px;
+    padding: 0.75rem;
+    text-align: center;
+    height: 40px;
+  }
+
+  .chart-line,
+  .chart-donut {
+    padding: 0.5rem;
+  }
+
+  .dashboard-wrapper {
+    padding: 0.5rem;
+  }
 }
